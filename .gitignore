@@ -17,3 +17,5 @@ Thumbs.db
 
 # Uploaded documents (private data)
 data/documents/*.pdf
+
+.env.example
