@@ -1,0 +1,9 @@
+Patient: Sunita Ramesh Deshpande | DOB: 22-Feb-1991 | MRN: WCH-2024-00789
+Diagnosis: Major Depressive Disorder (F32.2), Generalised Anxiety Disorder
+Medications: Sertraline 150mg OD, Clonazepam 0.5mg BD, Quetiapine 25mg HS
+PHQ-9 Score (last visit 10-Feb-2025): 19/27 (Severe) GAD-7 Score: 16/21 (Severe)
+Last episode: Suicidal ideation without plan (Jan 2025), hospitalised 4 days. Dr.
+Anjali Parekh notes (10-Feb-2025): Patient wants to stop Clonazepam — fears
+dependence. Insomnia worsening. Reports alcohol use (2-3 units/night) to manage
+anxiety. BMI 19.1 (underweight). Columbia Suicide Severity: Moderate risk. Safety
+plan in place.

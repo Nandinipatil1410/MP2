@@ -1,86 +1,148 @@
-# Privacy-Preserving Hybrid LLM System for Secure Document Reasoning
+# Privacy-Preserving Hybrid LLM System
 
-This project implements a secure AI architecture that leverages the high-level reasoning capabilities of cloud models (like Llama 3 via Groq) while keeping sensitive data strictly on local infrastructure (via Ollama).
+## Project Overview
+A privacy-preserving AI system that improves reasoning quality of local models without transmitting sensitive data to the cloud.
 
-## 🚀 Overview
-
-The system separates **Reasoning Planning** from **Task Execution**:
-1.  **Query Abstraction**: Sensitive data is masked from the user query.
-2.  **Cloud Planning**: The masked query is sent to a cloud model to generate a reasoning plan.
-3.  **Local Execution**: The reasoning plan is executed locally using sensitive document context retrieved via RAG.
-
-## 🛠️ Tech Stack
-
-| Component | Technology | Reason |
-| --- | --- | --- |
-| **Frontend** | Streamlit | Rapid development of interactive web UI. |
-| **Orchestrator** | LangChain | Industry standard for LLM workflow management. |
-| **Local LLM** | Ollama (Mistral/Llama3) | High-performance local inference engine. |
-| **Cloud LLM** | Groq (Llama 3 70B) | High-speed cloud model for complex reasoning tasks. |
-| **Vector DB** | FAISS | Efficient local similarity search for RAG. |
-| **Embeddings** | HuggingFace (all-MiniLM-L6-v2) | Small and fast local embeddings for indexing. |
-
-## 📂 Folder Structure
-
-```text
-Hybrid-LLM/
-├── app/
-│   ├── main.py                 # Streamlit Web Entry point
-│   └── modules/
-│       ├── cloud_planner.py     # Groq API integration
-│       ├── local_executor.py    # Ollama integration
-│       ├── orchestrator.py      # Main workflow logic
-│       ├── query_abstraction.py # PII masking & abstraction
-│       └── vector_store.py      # FAISS & Document processing
-├── data/
-│   ├── documents/               # Temporary storage for PDFs
-│   └── vectors/                 # Local FAISS index storage
-├── .env.example                 # Environment variable template
-├── requirements.txt             # Python dependencies
-└── README.md                    # Setup and usage guide
+## Architecture
+```
+User Query + Documents
+    ↓
+Local Processing (Encryption + Vector Indexing)
+    ↓
+Query Abstraction (Privacy Filter)
+    ↓
+Cloud Reasoning Planner (Logic Only - No Data)
+    ↓
+Local Execution Engine (LLM + Documents)
+    ↓
+Secure Response
 ```
 
-## ⚙️ Setup Instructions
+## Directory Structure
+```
+privacy_llm_project/
+├── requirements.txt
+├── README.md
+├── .env.example
+├── config/
+│   └── settings.py
+├── src/
+│   ├── __init__.py
+│   ├── student1_rag/          # Student 1: Local LLM + RAG + Vector DB
+│   │   ├── __init__.py
+│   │   ├── document_processor.py
+│   │   ├── vector_store.py
+│   │   └── local_llm.py
+│   ├── student2_cloud/         # Student 2: Cloud Integration + Planning
+│   │   ├── __init__.py
+│   │   ├── cloud_planner.py
+│   │   └── reasoning_executor.py
+│   ├── student3_ui/            # Student 3: Query Abstraction + UI + Evaluation
+│   │   ├── __init__.py
+│   │   ├── query_abstractor.py
+│   │   ├── evaluation.py
+│   │   └── streamlit_app.py
+│   └── orchestrator/
+│       ├── __init__.py
+│       └── langchain_orchestrator.py
+├── data/
+│   ├── documents/              # User uploaded documents
+│   └── vector_db/              # FAISS index storage
+└── tests/
+    ├── test_rag.py
+    ├── test_planner.py
+    └── test_abstraction.py
+```
 
-### 1. Prerequisites
-- Python 3.9+
-- [Ollama](https://ollama.com/) installed and running.
-- [Groq API Key](https://console.groq.com/).
+## Setup Instructions
+
+### 1. Install Ollama
+```bash
+# Linux/Mac
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Pull a model
+ollama pull mistral
+```
 
 ### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Setup Local LLM
-```bash
-ollama serve
-ollama pull mistral
+### 3. Environment Variables
+Create a `.env` file:
+```
+GROQ_API_KEY=your_groq_api_key_here
+LOCAL_MODEL=mistral
+EMBEDDING_MODEL=all-MiniLM-L6-v2
+VECTOR_DB_PATH=./data/vector_db
 ```
 
-### 4. Configure Environment
-Copy `.env.example` to `.env` and add your keys:
+### 4. Run the Application
 ```bash
-cp .env.example .env
-# Edit .env and replace YOUR_API_KEY_HERE
+python src/app.py
 ```
 
-### 5. Run the Application
-From the project root directory, run:
+## Work Distribution
+
+### Student 1 (Nandini Patil): Local LLM + RAG Pipeline + Vector DB
+- Document parsing (PDF, DOCX, TXT)
+- FAISS vector database setup
+- Embedding generation
+- Document retrieval system
+- Local LLM integration with Ollama
+
+### Student 2 (Bhumika Mane): Cloud Integration + Planning Module
+- Groq API integration
+- Reasoning plan generation
+- Plan execution engine
+- API error handling and retry logic
+
+### Student 3 (Trusha Kulkarni): Query Abstraction + UI + Evaluation
+- Query classification
+- Sensitive information removal
+- Streamlit web interface
+- Performance metrics (ROUGE, BERT-Score)
+- Comparative evaluation framework
+
+## Testing
+
 ```bash
-export PYTHONPATH=$PYTHONPATH:$(pwd)/app
-streamlit run app/main.py
+# Test RAG pipeline
+python -m pytest tests/test_rag.py
+
+# Test cloud planner
+python -m pytest tests/test_planner.py
+
+# Test query abstraction
+python -m pytest tests/test_abstraction.py
 ```
-*Note: Adding the `app` directory to your PYTHONPATH ensures that the modules are correctly discovered.*
 
-## 🧪 Testing Instructions
+## Automated Evaluation (LLM-as-Judge)
 
-1.  **Upload**: Provide a PDF containing some private information (e.g., a dummy medical case).
-2.  **Query**: Ask "What are the key patient risks and what plan should be followed?".
-3.  **Security Check**: Open the "Show Privacy & Reasoning Details" expander to verify that your query was masked before being sent to the cloud.
-4.  **Baseline Check**: Compare the results in the "Local-Only Baseline" tab to see how the hybrid approach provides better structured reasoning.
+```bash
+# Uses GEMINI_API_KEY/GOOGLE_API_KEY (recommended and used for dashboard judge verdict).
+# If Gemini is not configured, the CLI demo falls back to a heuristic judge.
+python test_demo.py --judge
+```
 
-## 🔮 Future Improvements
-- [ ] **Advanced PII Masking**: Use Spacy or Presidio for better name/entity detection.
-- [ ] **Multi-Agent Collaboration**: Use LangGraph for more complex reasoning loops.
-- [ ] **Data Encryption**: Encrypt the local FAISS index on disk.
+## Evaluation Metrics
+
+- **Accuracy**: Answer correctness
+- **Privacy Score**: Sensitive information leakage
+- **Latency**: Response time
+- **ROUGE Score**: Answer quality
+- **Comparison**: Local-only vs Hybrid vs Cloud-only
+
+## Features
+
+✅ Local document processing
+✅ Privacy-preserving query abstraction
+✅ Cloud-based reasoning planning
+✅ Hybrid execution pipeline
+✅ Performance comparison dashboard
+✅ Streamlit web interface
+
+## License
+MIT License - Educational Project

@@ -1,11 +1,39 @@
-streamlit
-langchain>=0.3.0
-langchain-community>=0.3.0
-langchain-core>=0.3.0
-langchain-groq
-langchain-huggingface
-faiss-cpu
-pypdf
-python-dotenv
-ollama
-sentence-transformers
+# Privacy-Preserving Hybrid LLM System
+# Requirements File
+
+# Core LLM and AI
+langchain>=0.1.0
+langchain-community>=0.0.13
+langchain-groq>=0.0.1
+ollama>=0.1.6
+
+# Vector Database
+faiss-cpu>=1.8.0
+sentence-transformers>=2.3.1
+
+# Document Processing
+pypdf>=3.17.4
+PyPDF2>=3.0.1
+python-docx>=1.1.0
+python-multipart>=0.0.6
+
+# Web Framework
+Flask>=3.0.0
+plotly>=5.18.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.3
+numpy>=1.26.0
+pandas>=2.1.4
+
+# API and HTTP
+requests>=2.31.0
+aiohttp>=3.9.1
+groq>=0.9.0
+
+# Evaluation
+rouge-score>=0.1.2
+bert-score>=0.3.13
+sacrebleu>=2.3.1
+torchvision
