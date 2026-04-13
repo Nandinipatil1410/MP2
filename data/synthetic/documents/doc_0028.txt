@@ -1,0 +1,22 @@
+DOMAIN: FINANCE
+TYPE: Internal Audit Report
+TITLE: Internal Audit Report for Fiscal Year 2022
+============================================================
+
+Introduction:
+Our internal audit team conducted a thorough examination of the financial records for Fiscal Year 2022, focusing on the accounts payable and accounts receivable processes. The audit was performed from February 10, 2023, to March 15, 2023, and covered all transactions from January 1, 2022, to December 31, 2022.
+
+Audit Objectives:
+The primary objectives of this audit were to assess the accuracy and completeness of financial transactions, evaluate the effectiveness of internal controls, and identify areas for improvement. Our team reviewed a total of 1,500 invoices and 2,500 payments, totaling $10,325,119 and $9,812,500, respectively.
+
+Key Findings:
+Our audit revealed that the average payment processing time was 35 days, with a standard deviation of 10 days. However, we noted that 15% of payments were processed outside of the approved 30-day window, resulting in late fees totaling $23,191. We also identified a discrepancy in the accounts receivable ledger, where the balance as of December 31, 2022, was $1,234,567, but the corresponding bank statement showed a balance of $1,187,654, resulting in a difference of $46,913.
+
+Audit Recommendations:
+Based on our findings, we recommend that the finance team implement a more efficient payment processing system, aiming to reduce the average processing time to 25 days. Additionally, we suggest that the accounts receivable ledger be reconciled on a monthly basis to prevent discrepancies. We estimate that implementing these recommendations will result in cost savings of $15,000 per annum and improve the overall financial reporting accuracy by 10%.
+
+Conclusion:
+In conclusion, our internal audit for Fiscal Year 2022 identified areas for improvement in the accounts payable and accounts receivable processes. By implementing our recommendations, we believe that the finance team can streamline their operations, reduce costs, and enhance the accuracy of financial reporting. The audit was performed under the supervision of Audit Manager, Emily J. Lee (Employee ID: 01234), and reviewed by the Audit Committee on April 10, 2023.
+
+Appendix:
+A list of all invoices and payments reviewed during the audit is available upon request. The audit report was prepared by Auditor, David M. Kim (Employee ID: 04567), on April 12, 2023.

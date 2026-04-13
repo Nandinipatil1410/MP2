@@ -204,13 +204,20 @@ def compare():
         local_answer = results.get("local_only", {}).get("answer", "")
         hybrid_answer = results.get("hybrid", {}).get("answer", "")
 
-        judge_payload = {
-            "provider": judge.judge_provider,
-            "model": judge.judge_model,
-            "local_only": judge.evaluate_answer(query, local_answer, reference_docs),
-            "hybrid": judge.evaluate_answer(query, hybrid_answer, reference_docs),
-            "comparison": judge.compare_answers(query, local_answer, hybrid_answer, reference_docs),
-        }
+        # Parallelize judging tasks
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            local_eval_future = executor.submit(judge.evaluate_answer, query, local_answer, reference_docs)
+            hybrid_eval_future = executor.submit(judge.evaluate_answer, query, hybrid_answer, reference_docs)
+            comparison_future = executor.submit(judge.compare_answers, query, local_answer, hybrid_answer, reference_docs)
+            
+            judge_payload = {
+                "provider": judge.judge_provider,
+                "model": judge.judge_model,
+                "local_only": local_eval_future.result(),
+                "hybrid": hybrid_eval_future.result(),
+                "comparison": comparison_future.result(),
+            }
 
         # Reconcile any inconsistency between per-criterion scores and the comparison winner/scores.
         # We want the dashboard to be internally consistent and not claim a "strong" win when

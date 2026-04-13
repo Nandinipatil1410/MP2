@@ -1,0 +1,31 @@
+DOMAIN: MEDICAL
+TYPE: Surgical Operation Note
+TITLE: Operation Note - Cholecystectomy
+============================================================
+
+Patient Information:
+Name: Emily J. Wilson
+Date of Birth: 1992-02-17
+Medical Record Number: WILS12345
+Operation Date: 2024-09-16
+
+Pre-Operative Diagnosis: Cholelithiasis
+
+Intraoperative Findings: The patient was taken to the operating room and placed under general anesthesia. A standard cholecystectomy was performed with a 4-port approach. The cystic duct was clipped and divided, and the cystic artery was ligated with 4-0 Vicryl suture. The gallbladder was dissected from the liver bed, and the liver was noted to have mild fatty infiltration.
+
+Operative Time: 67 minutes
+Estimated Blood Loss (EBL): 150 mL
+Urine Output: 300 mL
+
+Post-Operative Plan: The patient was transferred to the recovery room in stable condition. She will be started on a clear liquid diet and advanced to a regular diet as tolerated. Pain management will be with IV acetaminophen and oral oxycodone as needed. The patient will be discharged home on post-operative day 1 with a 7-day course of cephalexin 500 mg PO BID for prophylaxis against wound infection.
+
+Complications: None noted during the operation. However, the patient did experience a 10 mmHg drop in systolic blood pressure during the dissection of the gallbladder from the liver bed. This was managed with a bolus of 500 mL of lactated Ringer's solution.
+
+Pathology: The gallbladder was sent to pathology for examination. Preliminary results indicate the presence of multiple small gallstones, with the largest measuring 6 mm in diameter. The final pathology report is pending.
+
+Discharge Medications:
+- Acetaminophen 650 mg PO Q4H as needed for pain
+- Oxycodone 5 mg PO Q4H as needed for pain
+- Cephalexin 500 mg PO BID for 7 days
+
+Follow-Up: The patient will follow up in the clinic in 2 weeks for removal of staples and wound inspection.

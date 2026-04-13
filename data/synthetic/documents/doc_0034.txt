@@ -1,0 +1,19 @@
+DOMAIN: FINANCE
+TYPE: Internal Audit Report
+TITLE: Internal Audit Report for Financial Year 2022-2023
+============================================================
+
+Introduction:
+This internal audit report is for the financial year 2022-2023, conducted by our internal audit team led by Ms. Emily J. Miller, CPA (Certified Public Accountant) with ID EA123456. The audit period was from April 1, 2022, to March 31, 2023.
+
+Financial Highlights:
+The total revenue for the year was $10,500,000, with an increase of 15% from the previous year. The total expenditure was $8,200,000, resulting in a net surplus of $2,300,000. The return on investment (ROI) was calculated to be 12.5%, which is 2.5% higher than the industry average.
+
+Audit Findings:
+During the audit, we identified a few areas that require attention. Firstly, we found that the accounts payable department had not reconciled their ledger with the bank statement for the months of June and July 2022, resulting in a discrepancy of $150,000. Secondly, the payroll department had made an error in calculating the tax deductions for employee John D. Smith, ID 0987654, resulting in an underpayment of $5,000. Lastly, the treasury department had invested $500,000 in a high-risk investment scheme without proper approval, resulting in a loss of $200,000.
+
+Recommendations:
+Based on our findings, we recommend that the accounts payable department reconciles their ledger with the bank statement on a monthly basis. We also recommend that the payroll department reviews their tax deduction calculations to ensure accuracy. Furthermore, we recommend that the treasury department obtains proper approval before investing in any high-risk investment schemes.
+
+Conclusion:
+In conclusion, the financial year 2022-2023 was a successful year for our company, with a significant increase in revenue and a healthy net surplus. However, there are areas that require attention to ensure that our financial processes are accurate and compliant with regulations.

@@ -1,0 +1,40 @@
+DOMAIN: LEGAL
+TYPE: Employment Contract
+TITLE: Employment Contract
+============================================================
+
+EMPLOYMENT CONTRACT
+
+This Employment Contract ("Contract") is made and entered into on February 22, 2024 ("Effective Date") by and between John Doe ("Employee"), with Social Security number 123-45-6789 and date of birth January 1, 1990, and XYZ Corporation ("Employer"), a Delaware corporation with its principal place of business at 123 Main Street, New York, NY 10001.
+
+1. TERM
+The term of this Contract shall commence on the Effective Date and continue for a period of two (2) years, unless terminated earlier in accordance with the provisions of Section 8.
+
+2. COMPENSATION
+The Employer shall pay the Employee an annual salary of $120,000, paid bi-weekly in equal installments of $4,615.38. The Employee shall also be eligible for a bonus of up to 20% of his annual salary, based on performance metrics to be determined by the Employer. The Employee shall be entitled to 15 days of paid vacation per year, and 10 days of paid sick leave per year.
+
+3. BENEFITS
+The Employer shall provide the Employee with health insurance, with a $500 deductible and a 20% co-pay. The Employee shall also be eligible to participate in the Employer's 401(k) plan, with a 5% employer match. The Employee shall be responsible for paying 10% of the health insurance premiums, which shall be deducted from his bi-weekly paychecks.
+
+4. CONFIDENTIALITY
+The Employee shall not disclose any confidential information of the Employer, including but not limited to trade secrets, customer lists, and financial information. The Employee shall return all confidential information to the Employer upon termination of his employment.
+
+5. INTELLECTUAL PROPERTY
+The Employee assigns to the Employer all right, title, and interest in and to any intellectual property created by the Employee during his employment, including but not limited to patents, copyrights, and trade secrets.
+
+6. TERMINATION
+Either party may terminate this Contract upon 30 days' written notice to the other party. In the event of termination, the Employee shall be entitled to receive his accrued but unpaid salary, bonus, and benefits. The Employee shall not be entitled to receive any severance pay, unless the Employer terminates his employment without cause, in which case the Employee shall be entitled to receive 12 weeks of severance pay, at a rate of $5,000 per week.
+
+7. DISPUTE RESOLUTION
+Any disputes arising out of or related to this Contract shall be resolved through arbitration, in accordance with the rules of the American Arbitration Association.
+
+8. GOVERNING LAW
+This Contract shall be governed by and construed in accordance with the laws of the State of New York.
+
+IN WITNESS WHEREOF, the parties have executed this Contract as of the date first above written.
+
+John Doe (Employee)
+XYZ Corporation (Employer)
+
+Date: February 22, 2024
+Account Number: 9876543210

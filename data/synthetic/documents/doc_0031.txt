@@ -1,0 +1,59 @@
+DOMAIN: FINANCE
+TYPE: Insurance Claim Document
+TITLE: Insurance Claim Document for Policyholder Emily J. Wilson
+============================================================
+
+
+      Insurance Claim Document
+
+      
+
+      Policyholder Information:
+
+      Name: Emily J. Wilson
+
+      Policy Number: PL123456
+
+      Date of Birth: 1990-02-12
+
+      Address: 456 Elm Street, Anytown, CA 12345
+
+      
+
+      Claim Information:
+
+      Claim Number: CL789012
+
+      Date of Incident: 2022-01-15
+
+      Incident Description: The policyholder's vehicle, a 2018 Honda Civic with Vehicle Identification Number (VIN) 19UUB1F52JA012345, was involved in a collision with another vehicle. The policyholder's vehicle sustained damage to the front bumper and hood, with repair costs estimated at $2,500.00. The policyholder also reported injury to their neck and back, with medical expenses totaling $1,200.00.
+
+      
+
+      Coverage Details:
+
+      Policy Limit: $100,000.00
+
+      Deductible: $500.00
+
+      Coverage Percentage: 80%
+
+      
+
+      Claim Calculation:
+
+      Total Claim Amount: $3,700.00 ($2,500.00 repair costs + $1,200.00 medical expenses)
+
+      Deductible: $500.00
+
+      Net Claim Amount: $3,200.00 ($3,700.00 - $500.00)
+
+      Insurance Coverage: $2,560.00 (80% of $3,200.00)
+
+      
+
+      Notes:
+
+      The policyholder has a history of two previous claims, with the most recent claim occurring on 2018-06-01. The policyholder's premium has been increased by 15% as a result of these claims. The policyholder has also reported a pre-existing condition, which may affect the coverage of their medical expenses.
+
+   

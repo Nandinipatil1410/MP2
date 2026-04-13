@@ -1,0 +1,19 @@
+DOMAIN: MEDICAL
+TYPE: Radiology Report
+TITLE: Abdominal Ultrasound Report for Patient John Doe (123-45-6789)
+============================================================
+
+Abdominal Ultrasound Report
+
+Patient Name: John Doe (123-45-6789)
+Date of Birth: 01-01-1980
+Date of Examination: 01-01-2022
+
+Examination Findings:
+
+* Liver: The liver measures 14.5 cm in greatest diameter. There is mild hepatomegaly, but the parenchymal architecture is preserved with no focal lesions or significant abnormalities. The portal vein and hepatic veins appear normal in size and flow.
+* Spleen: The spleen measures 11 cm in greatest diameter. It is slightly enlarged and there is prominent splenic hilar vascularity suggestive of splenomegaly.
+* Kidneys: Both kidneys appear normal in size and echotexture. There is no evidence of hydronephrosis, obstruction, or calculi.
+* Pancreas: The pancreas is visualized in its entirety. There is no evidence of pancreatic enlargement, mass, or ductal dilatation.
+
+Conclusion: The abdominal ultrasound reveals mild hepatomegaly and splenomegaly. The liver and spleen dimensions are as follows: Liver: 14.5 cm, Spleen: 11 cm. Further investigation, such as CT or MRI, may be necessary for a more detailed evaluation.

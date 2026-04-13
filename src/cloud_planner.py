@@ -3,22 +3,28 @@ Cloud Reasoning Planner Module
 Uses cloud LLM (Groq) to generate reasoning plans without accessing private data
 """
 import os
+import sys
+from pathlib import Path
 from typing import List, Dict
 import requests
 import json
 from groq import Groq
 
+# Add root to path to import config
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from config.settings import CLOUD_MODEL
+
 
 class CloudReasoningPlanner:
     """Generate reasoning plans using cloud LLM"""
     
-    def __init__(self, api_key: str = None, model: str = "llama-3.3-70b-versatile"):
+    def __init__(self, api_key: str = None, model: str = None):
         env_key = os.getenv("GROQ_API_KEY")
         self.api_key = api_key or env_key
         # Treat common placeholder values as "not configured" so we can fall back gracefully.
         if self.api_key and self.api_key.strip().lower() in {"your_groq_api_key_here", "your_api_key_here", "changeme"}:
             self.api_key = None
-        self.model = model
+        self.model = model or CLOUD_MODEL
         
         if not self.api_key:
             print("⚠️  Warning: No Groq API key found. Using fallback mode.")
@@ -80,15 +86,18 @@ class CloudReasoningPlanner:
         """Create a prompt for plan generation"""
         return f"""Given this query: "{query}"
 
-Generate a step-by-step reasoning plan to answer this query.
-The plan should be logical steps that can be executed on private documents.
+Generate a highly efficient, concise step-by-step reasoning plan to answer this query.
+The plan should be the MINIMAL number of logical steps (MAXIMUM 5) required to extract the answer from private documents.
 
 Format your response as numbered steps:
 1. [First reasoning step]
 2. [Second reasoning step]
-3. [Final step and synthesis]
+3. [Synthesize final answer]
 
-Remember: Focus only on the reasoning structure, not on specific data."""
+Strict Requirements:
+- NO MORE THAN 5 STEPS.
+- Avoid redundant steps or minor details.
+- Focus only on the reasoning structure, not on specific data."""
     
     def _parse_plan(self, plan_text: str) -> List[str]:
         """Parse plan text into structured steps"""

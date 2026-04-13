@@ -2,9 +2,15 @@
 Main Orchestrator
 Coordinates the entire privacy-preserving hybrid LLM pipeline
 """
+import sys
 from typing import Dict, List
 import time
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
+
+# Add root to path to import config
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from config.settings import LOCAL_MODEL, CLOUD_MODEL
 
 from document_processor import DocumentProcessor
 from vector_store import VectorStore
@@ -24,7 +30,7 @@ class HybridLLMOrchestrator:
         self.doc_processor = DocumentProcessor(chunk_size=500, chunk_overlap=50)
         self.vector_store = VectorStore()
         self.query_abstractor = QueryAbstractor()
-        self.cloud_planner = CloudReasoningPlanner(api_key=groq_api_key)
+        self.cloud_planner = CloudReasoningPlanner(api_key=groq_api_key, model=CLOUD_MODEL)
         self.local_executor = LocalLLMExecutor()
         
         # State
@@ -247,23 +253,28 @@ Answer:"""
         return min(1.0, depth)
 
     def compare_approaches(self, query: str) -> Dict[str, Dict]:
-        """Compare all three approaches with enriched metrics"""
+        """Compare all three approaches in parallel with enriched metrics"""
         print("\n" + "="*60)
-        print("COMPARING ALL APPROACHES")
+        print("COMPARING ALL APPROACHES (Parallel)")
         print("="*60)
         
         results = {}
         
-        # Hybrid
-        results['hybrid'] = self.process_query_hybrid(query)
+        # Use ThreadPoolExecutor to run all approaches concurrently
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            # Submit all tasks
+            hybrid_future = executor.submit(self.process_query_hybrid, query)
+            local_future = executor.submit(self.process_query_local_only, query)
+            cloud_future = executor.submit(self.process_query_cloud_only, query)
+            
+            # Collect results
+            results['hybrid'] = hybrid_future.result()
+            results['local_only'] = local_future.result()
+            results['cloud_only'] = cloud_future.result()
+        
+        # Add reasoning depth estimates
         results['hybrid']['reasoning_depth'] = self.estimate_reasoning_depth(results['hybrid'])
-        
-        # Local-only
-        results['local_only'] = self.process_query_local_only(query)
         results['local_only']['reasoning_depth'] = self.estimate_reasoning_depth(results['local_only'])
-        
-        # Cloud-only (simulated)
-        results['cloud_only'] = self.process_query_cloud_only(query)
         results['cloud_only']['reasoning_depth'] = self.estimate_reasoning_depth(results['cloud_only'])
         
         return results

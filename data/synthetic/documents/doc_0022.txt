@@ -1,0 +1,25 @@
+DOMAIN: MEDICAL
+TYPE: Medication Review Record
+TITLE: Medication Review Record
+============================================================
+
+Patient Information:
+Name: Emily Johnson
+Date of Birth: 1990-02-12
+Medical Record Number: 123456789
+
+Medication List:
+1. Aspirin 81mg, taken daily for cardiovascular disease prevention
+2. Lisinopril 10mg, taken twice daily for hypertension management
+3. Atorvastatin 20mg, taken daily for hyperlipidemia management
+
+Medication Review:
+The patient was seen for a medication review on 2024-03-15. The patient reported taking all medications as prescribed, but expressed concerns about potential side effects of Lisinopril. The patient's blood pressure was measured at 120/80 mmHg, and their lipid profile was within normal limits (LDL: 70mg/dL, HDL: 60mg/dL, Triglycerides: 100mg/dL). The patient's creatinine level was 1.2mg/dL, indicating mild renal impairment.
+
+The patient's medication regimen was adjusted as follows: the dose of Lisinopril was decreased to 5mg twice daily to minimize potential side effects, and the patient was advised to monitor their blood pressure closely. The patient was also started on a low-dose diuretic (hydrochlorothiazide 12.5mg daily) to help manage their blood pressure.
+
+The patient's estimated glomerular filtration rate (eGFR) was calculated to be 60ml/min/1.73m^2, indicating moderate renal impairment. The patient's medication dosages were adjusted accordingly, with the dose of Atorvastatin decreased to 10mg daily to minimize the risk of renal toxicity.
+
+The patient's medication adherence was calculated to be 95% over the past 6 months, based on pharmacy refill records.
+
+The patient's total daily medication cost was calculated to be $25.50, based on the following costs: Aspirin ($5.00 per month), Lisinopril ($10.00 per month), Atorvastatin ($5.00 per month), and hydrochlorothiazide ($5.50 per month).

@@ -4,15 +4,21 @@ Executes reasoning plans on private documents using local Ollama
 """
 import subprocess
 import json
+import sys
+from pathlib import Path
 from typing import List, Dict
 import requests
+
+# Add root to path to import config
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from config.settings import LOCAL_MODEL
 
 
 class LocalLLMExecutor:
     """Execute reasoning plans using local Ollama LLM"""
     
-    def __init__(self, model: str = "mistral"):
-        self.model = model
+    def __init__(self, model: str = None):
+        self.model = model or LOCAL_MODEL
         self.ollama_url = "http://localhost:11434"
         self._check_ollama()
     

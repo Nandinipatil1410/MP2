@@ -136,25 +136,44 @@ class LLMJudge:
         if self.gemini_api_key.lower() in {"your_gemini_api_key_here", "your_api_key_here", "changeme"}:
             self.gemini_api_key = ""
         if self.groq_api_key.lower() in {"your_groq_api_key_here", "your_api_key_here", "changeme"}:
-            self.groq_api_key = ""
-
+            self.groq_api_key = api_key or os.getenv("GROQ_API_KEY") or ""
         self.allow_groq_fallback = allow_groq_fallback
-        if self.gemini_api_key:
+        self.ollama_url = "http://localhost:11434"
+        
+        # Static flag to remember if Gemini is failing across instances
+        if not hasattr(LLMJudge, "_gemini_available"):
+            LLMJudge._gemini_available = True
+        
+        # Determine best available judge provider
+        if self.gemini_api_key and LLMJudge._gemini_available:
             self.judge_provider = "gemini"
         elif allow_groq_fallback and Groq and self.groq_api_key:
             self.judge_provider = "groq"
+        elif self._check_ollama():
+            self.judge_provider = "ollama"
         else:
             self.judge_provider = "heuristic"
+            
         if judge_model:
             self.judge_model = judge_model.strip()
         elif self.judge_provider == "gemini":
             # Model names can change over time; "gemini-flash-latest" is a safer default.
             self.judge_model = (os.getenv("GEMINI_JUDGE_MODEL") or "gemini-flash-latest").strip()
+        elif self.judge_provider == "ollama":
+            self.judge_model = "mistral"
         else:
             self.judge_model = "llama-3.3-70b-versatile"
 
         self.client = Groq(api_key=self.groq_api_key) if (self.judge_provider == "groq" and Groq) else None
         self.metrics = EvaluationMetrics()
+
+    def _check_ollama(self) -> bool:
+        """Check if local Ollama is available."""
+        try:
+            response = requests.get(f"{self.ollama_url}/api/tags", timeout=2)
+            return response.status_code == 200
+        except Exception:
+            return False
 
     def evaluate_answer(self, question: str, answer: str, reference_docs: str | List[Dict[str, Any]] | List[str]) -> Dict[str, Any]:
         """Evaluate one answer on multiple criteria."""
@@ -163,7 +182,8 @@ class LLMJudge:
         if self.judge_provider == "heuristic":
             return self._fallback_answer_evaluation(question, answer, reference_text)
 
-        prompt = f"""You are an expert evaluator for document-grounded QA systems.
+        prompt = f"""You are a highly critical, expert senior evaluator for precision document-grounded QA systems.
+Your goal is to provide a rigorous, objective assessment that distinguishes between "good" and "flawless" answers.
 
 Question:
 {question}
@@ -174,14 +194,19 @@ Answer to Evaluate:
 Reference Documents:
 {reference_text}
 
-Evaluate the answer on these criteria from 1 to 10:
-1. accuracy
-2. completeness
-3. relevance
-4. coherence
-5. groundedness
+SCORING RUBRIC (1-10):
+- 10: FLAWLESS. Perfect accuracy, covers all nuances, strictly grounded, zero fluff.
+- 8-9: EXCELLENT. Minor details missing but highly accurate and professional.
+- 6-7: GOOD. Correct answer but missing several nuances or slightly disorganized.
+- 4-5: MARGINAL. Technically correct but incomplete, poorly grounded, or overly brief.
+- 1-3: FAILED. Significant inaccuracies, not grounded in docs, or irrelevant.
 
-Return valid JSON only with this structure:
+CRITICISM POLICY:
+- If any detail from the Reference Documents is missing but relevant to the question, you MUST deduct points from 'completeness'.
+- If the answer includes any information not explicitly supported by the docs, you MUST deduct points from 'groundedness'.
+- DO NOT give 10/10 unless the answer is perfect in every single way. Be conservative with 9s and 10s.
+
+Return valid JSON:
 {{
   "accuracy": {{"score": 0, "reasoning": ""}},
   "completeness": {{"score": 0, "reasoning": ""}},
@@ -209,7 +234,9 @@ Return valid JSON only with this structure:
         if self.judge_provider == "heuristic":
             return self._fallback_answer_comparison(question, answer_local, answer_hybrid, reference_text)
 
-        prompt = f"""You are an expert evaluator comparing two AI-generated answers grounded in reference documents.
+        prompt = f"""You are a critical, expert senior evaluator comparing two AI-generated answers grounded in reference documents.
+
+Your task is to identify the superior answer and ensure the scores strictly reflect the qualitative differences you observe.
 
 Question:
 {question}
@@ -223,22 +250,19 @@ Answer B (Hybrid):
 Reference Documents:
 {reference_text}
 
-Decide which answer is better. Focus on:
-- accuracy
-- completeness
-- coherence
-- detail level
-- reasoning quality
-- groundedness in the documents
+COMPARISON RULES:
+1. DIFFERENTIATION: If one answer is "more detailed", "better reasoned", or "more grounded", its scores MUST be significantly higher than the other's. DO NOT give identical scores for different quality levels.
+2. NO EASY 10s: Reserve 10 for absolute perfection. If an answer missed even one nuance, it is an 8 or 9.
+3. PREFERENCE: Choose a clear winner (A or B) unless they are verbatim identical or genuinely provide the exact same utility.
 
-Return valid JSON only with this structure:
+Return valid JSON:
 {{
   "winner": "A",
   "answer_a_score": 0,
   "answer_b_score": 0,
   "key_differences": ["", ""],
-  "reasoning": "",
-  "preference_strength": "Weak"
+  "reasoning": "Explain exactly why the winner is superior. If one answer is more 10/10 while the other is 8/10, justify the gap specifically.",
+  "preference_strength": "Weak/Moderate/Strong"
 }}
 """
         response_text = self.call_judge_llm(prompt)
@@ -306,7 +330,27 @@ Return valid JSON only with this structure:
     def call_judge_llm(self, prompt: str) -> str:
         """Call the judge LLM and return raw text."""
         if self.judge_provider == "gemini":
-            return self._call_gemini(prompt)
+            try:
+                return self._call_gemini(prompt)
+            except Exception as e:
+                print(f"⚠️ Gemini Judge failed: {e}")
+                # Mark Gemini as unavailable so we don't try it again in this session
+                LLMJudge._gemini_available = False
+                
+                if self._check_ollama():
+                    print("🔄 Falling back to local Ollama judge...")
+                    self.judge_provider = "ollama"
+                    self.judge_model = "mistral"
+                    return self._call_ollama(prompt)
+                else:
+                    print("⚠️ Ollama unavailable. Falling back to heuristic judge.")
+                    self.judge_provider = "heuristic"
+                    # Return special marker for fallback handling if needed
+                    raise e
+
+        if self.judge_provider == "ollama":
+            return self._call_ollama(prompt)
+
         if self.judge_provider != "groq" or not self.client:
             raise RuntimeError("Judge client is not configured.")
 
@@ -428,6 +472,26 @@ Return valid JSON only with this structure:
         parts = content.get("parts") or []
         text_parts = [part.get("text", "") for part in parts if isinstance(part, dict)]
         return "\n".join([part for part in text_parts if part]).strip()
+
+    def _call_ollama(self, prompt: str) -> str:
+        """Call local Ollama API for evaluation."""
+        try:
+            url = f"{self.ollama_url}/api/generate"
+            payload = {
+                "model": self.judge_model,
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": 0.1,
+                    "num_predict": 300  # Reduced for speed
+                }
+            }
+            response = requests.post(url, json=payload, timeout=60)
+            response.raise_for_status()
+            return response.json().get('response', '').strip()
+        except Exception as e:
+            print(f"Error calling Ollama judge: {e}")
+            raise RuntimeError(f"Ollama judge failed: {e}")
 
     def _list_gemini_models(self, max_models: int = 50) -> List[str]:
         """List available Gemini models for the provided API key (best-effort)."""

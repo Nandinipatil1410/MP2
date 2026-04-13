@@ -1,0 +1,47 @@
+DOMAIN: MEDICAL
+TYPE: Patient Discharge Summary
+TITLE: Patient Discharge Summary
+============================================================
+
+Patient Name: Emily J. Wilson
+Patient ID: PW123456
+Date of Birth: 02/12/1992
+Date of Admission: 01/05/2023
+Date of Discharge: 01/12/2023
+
+Chief Complaint: The patient presented with symptoms of acute respiratory distress, including shortness of breath and cough, which was later diagnosed as community-acquired pneumonia.
+
+History of Present Illness: The patient reported experiencing symptoms for 3 days prior to admission, with a fever of 103.2°F (39.6°C) and a cough productive of yellow sputum. The patient was treated with antibiotics and oxygen therapy, with an initial oxygen saturation of 88% on room air, which improved to 96% on 2L NC.
+
+Medications at Discharge:
+- Ceftriaxone 1g IV q12h
+- Azithromycin 250mg PO q24h
+- Oxygen therapy as needed
+
+Lab Results:
+- WBC count: 15,000 cells/μL
+- Hemoglobin: 12.1 g/dL
+- Platelet count: 250,000 cells/μL
+- Blood culture: no growth after 48 hours
+- Sputum culture: grew Streptococcus pneumoniae, susceptible to ceftriaxone and azithromycin
+
+Vital Signs at Discharge:
+- Temperature: 98.6°F (37°C)
+- Blood Pressure: 120/80 mmHg
+- Heart Rate: 80 bpm
+- Respiratory Rate: 18 breaths/min
+- Oxygen Saturation: 96% on room air
+
+Discharge Instructions:
+- Follow up with primary care physician in 1 week
+- Complete a 7-day course of antibiotics
+- Use an incentive spirometer to improve lung function, with a goal of 1500 mL
+- Return to the emergency department if symptoms worsen or if the patient experiences difficulty breathing
+
+A note from the physician: The patient was initially treated with a different antibiotic regimen, but due to a reported allergy to penicillin, the treatment was changed to ceftriaxone and azithromycin. The patient's oxygen saturation improved significantly, but the patient still required oxygen therapy at discharge.
+
+Total hospital stay: 7 days
+Total hospital charges: $23,419.50
+Total medication cost: $1,200.00
+
+The patient was also educated on proper inhaler use, with a demonstration of a spacer device, and was provided with a written action plan for managing asthma symptoms, although the patient does not have a diagnosis of asthma.

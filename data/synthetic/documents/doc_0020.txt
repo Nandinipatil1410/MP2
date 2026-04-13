@@ -1,0 +1,43 @@
+DOMAIN: MEDICAL
+TYPE: Patient Discharge Summary
+TITLE: Discharge Summary for Emily J. Wilson
+============================================================
+
+Patient Information:
+Name: Emily J. Wilson
+Date of Birth: 02/12/1992
+Medical Record Number: 942311
+Account Number: 7712345
+
+Admission Information:
+Admission Date: 08/20/2023
+Discharge Date: 08/27/2023
+Length of Stay: 7 days
+
+Chief Complaint:
+Patient presented with symptoms of acute respiratory distress, including shortness of breath, cough, and fever.
+
+History of Present Illness:
+The patient reported a 3-day history of symptoms prior to admission. She was treated with azithromycin 250mg PO q12h for 5 days and acetaminophen 650mg PO q6h for 3 days. Her temperature ranged from 100.4°F to 103.2°F during the hospital stay. The patient's oxygen saturation levels were maintained above 92% on 2L NC. Her WBC count was 12,500 cells/μL on admission, which decreased to 8,500 cells/μL on the day of discharge.
+
+Medications at Discharge:
+1. Albuterol 2.5mg/3mL via nebulizer q6h
+2. Fluticasone 250mcg/2 puffs via inhaler BID
+3. Azithromycin 250mg PO q12h for 2 additional days
+
+Lab Results:
+Hemoglobin: 12.1 g/dL
+Hematocrit: 36.2%
+WBC count: 8,500 cells/μL
+Platelet count: 250,000 cells/μL
+Na: 140 mEq/L
+K: 4.2 mEq/L
+
+Discharge Instructions:
+1. Follow up with primary care physician within 7-10 days
+2. Continue medications as prescribed
+3. Monitor temperature and report any fever above 100.4°F
+4. Use incentive spirometer 10 times q2h to improve lung function
+
+Special Instructions:
+The patient's oxygen saturation levels were noted to be lower than expected on room air during the hospital stay, with a recorded low of 88% on 08/24/2023. The patient was advised to use supplemental oxygen at 1L NC at home as needed to maintain oxygen saturation levels above 92%.

@@ -1,0 +1,33 @@
+DOMAIN: FINANCE
+TYPE: Internal Audit Report
+TITLE: Internal Audit Report for Financial Year 2022-2023
+============================================================
+
+Introduction:
+This internal audit report is compiled based on the financial data of XYZ Corporation for the financial year 2022-2023. The audit was conducted from January 10, 2023, to February 20, 2023, by our internal audit team led by Auditor-in-Charge, Ms. Emily J. Wilson, CPA (License Number: CPA-12345).
+
+Scope of Audit:
+The scope of this audit included a review of financial transactions from April 1, 2022, to March 31, 2023, with a focus on accounts payable, accounts receivable, and payroll. Our team reviewed 500 transactions, including 200 accounts payable invoices, 150 accounts receivable invoices, and 150 payroll payments.
+
+Findings:
+Our audit revealed several key findings. Firstly, a total of $120,000 in accounts payable invoices were paid after the due date, resulting in late payment fees of $6,000. Secondly, we identified $80,000 in accounts receivable that were outstanding for more than 90 days, which may impact the company's cash flow. Lastly, our review of payroll records showed that the average salary increase for employees was 10%, while the CEO, Mr. David M. Lee (Employee ID: DMLEE123), received a 20% increase, which may indicate a potential disparity in compensation practices.
+
+Recommendations:
+Based on our findings, we recommend that the company implement a more efficient accounts payable process to avoid late payment fees. Additionally, we suggest that the company review its accounts receivable management to minimize outstanding payments. Lastly, we recommend a review of the compensation practices to ensure fairness and equity across all employees.
+
+Conclusion:
+In conclusion, our internal audit has identified several areas of improvement for XYZ Corporation. We believe that by implementing our recommendations, the company can improve its financial management and reduce potential risks.
+
+Appendix:
+We have included the following appendices for reference:
+Appendix A: List of Audit Team Members
+- Ms. Emily J. Wilson, CPA (License Number: CPA-12345)
+- Mr. John D. Smith (Employee ID: JDSMITH456)
+- Ms. Sarah K. Taylor (Employee ID: SKTAYLOR789)
+Appendix B: Audit Schedule
+- January 10, 2023: Audit commencement
+- February 20, 2023: Audit completion
+Appendix C: Financial Data
+- Total Revenue for FY 2022-2023: $10,000,000
+- Total Expenses for FY 2022-2023: $8,000,000
+- Net Profit for FY 2022-2023: $2,000,000

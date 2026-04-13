@@ -1,0 +1,1292 @@
+[
+  {
+    "doc_id": 0,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0000.txt",
+    "domain": "legal",
+    "doc_type": "gdpr compliance assessment",
+    "query": "What are the key facts and findings in this gdpr compliance assessment?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 0,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0000.txt",
+    "domain": "legal",
+    "doc_type": "gdpr compliance assessment",
+    "query": "What numerical values or calculations are present in this gdpr compliance assessment and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 0,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0000.txt",
+    "domain": "legal",
+    "doc_type": "gdpr compliance assessment",
+    "query": "What are the risks, contradictions, or implications present in this gdpr compliance assessment?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 1,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0001.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What are the key facts and findings in this medication review record?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 1,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0001.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What numerical values or calculations are present in this medication review record and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 1,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0001.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What are the risks, contradictions, or implications present in this medication review record?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 2,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0002.txt",
+    "domain": "medical",
+    "doc_type": "surgical operation note",
+    "query": "What are the key facts and findings in this surgical operation note?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 2,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0002.txt",
+    "domain": "medical",
+    "doc_type": "surgical operation note",
+    "query": "What numerical values or calculations are present in this surgical operation note and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 2,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0002.txt",
+    "domain": "medical",
+    "doc_type": "surgical operation note",
+    "query": "What are the risks, contradictions, or implications present in this surgical operation note?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 3,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0003.txt",
+    "domain": "medical",
+    "doc_type": "patient discharge summary",
+    "query": "What are the key facts and findings in this patient discharge summary?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 3,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0003.txt",
+    "domain": "medical",
+    "doc_type": "patient discharge summary",
+    "query": "What numerical values or calculations are present in this patient discharge summary and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 3,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0003.txt",
+    "domain": "medical",
+    "doc_type": "patient discharge summary",
+    "query": "What are the risks, contradictions, or implications present in this patient discharge summary?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 4,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0004.txt",
+    "domain": "medical",
+    "doc_type": "psychiatric assessment",
+    "query": "What are the key facts and findings in this psychiatric assessment?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 4,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0004.txt",
+    "domain": "medical",
+    "doc_type": "psychiatric assessment",
+    "query": "What numerical values or calculations are present in this psychiatric assessment and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 4,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0004.txt",
+    "domain": "medical",
+    "doc_type": "psychiatric assessment",
+    "query": "What are the risks, contradictions, or implications present in this psychiatric assessment?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 5,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0005.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What are the key facts and findings in this privacy audit report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 5,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0005.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What numerical values or calculations are present in this privacy audit report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 5,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0005.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What are the risks, contradictions, or implications present in this privacy audit report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 6,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0006.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What are the key facts and findings in this medication review record?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 6,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0006.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What numerical values or calculations are present in this medication review record and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 6,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0006.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What are the risks, contradictions, or implications present in this medication review record?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 7,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0007.txt",
+    "domain": "finance",
+    "doc_type": "tax assessment report",
+    "query": "What are the key facts and findings in this tax assessment report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 7,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0007.txt",
+    "domain": "finance",
+    "doc_type": "tax assessment report",
+    "query": "What numerical values or calculations are present in this tax assessment report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 7,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0007.txt",
+    "domain": "finance",
+    "doc_type": "tax assessment report",
+    "query": "What are the risks, contradictions, or implications present in this tax assessment report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 8,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0008.txt",
+    "domain": "medical",
+    "doc_type": "surgical operation note",
+    "query": "What are the key facts and findings in this surgical operation note?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 8,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0008.txt",
+    "domain": "medical",
+    "doc_type": "surgical operation note",
+    "query": "What numerical values or calculations are present in this surgical operation note and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 8,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0008.txt",
+    "domain": "medical",
+    "doc_type": "surgical operation note",
+    "query": "What are the risks, contradictions, or implications present in this surgical operation note?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 9,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0009.txt",
+    "domain": "medical",
+    "doc_type": "psychiatric assessment",
+    "query": "What are the key facts and findings in this psychiatric assessment?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 9,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0009.txt",
+    "domain": "medical",
+    "doc_type": "psychiatric assessment",
+    "query": "What numerical values or calculations are present in this psychiatric assessment and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 9,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0009.txt",
+    "domain": "medical",
+    "doc_type": "psychiatric assessment",
+    "query": "What are the risks, contradictions, or implications present in this psychiatric assessment?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 10,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0010.txt",
+    "domain": "legal",
+    "doc_type": "service level agreement",
+    "query": "What are the key facts and findings in this service level agreement?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 10,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0010.txt",
+    "domain": "legal",
+    "doc_type": "service level agreement",
+    "query": "What numerical values or calculations are present in this service level agreement and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 10,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0010.txt",
+    "domain": "legal",
+    "doc_type": "service level agreement",
+    "query": "What are the risks, contradictions, or implications present in this service level agreement?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 11,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0011.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What are the key facts and findings in this medication review record?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 11,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0011.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What numerical values or calculations are present in this medication review record and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 11,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0011.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What are the risks, contradictions, or implications present in this medication review record?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 12,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0012.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What are the key facts and findings in this insurance claim document?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 12,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0012.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What numerical values or calculations are present in this insurance claim document and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 12,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0012.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What are the risks, contradictions, or implications present in this insurance claim document?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 13,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0013.txt",
+    "domain": "finance",
+    "doc_type": "quarterly earnings report",
+    "query": "What are the key facts and findings in this quarterly earnings report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 13,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0013.txt",
+    "domain": "finance",
+    "doc_type": "quarterly earnings report",
+    "query": "What numerical values or calculations are present in this quarterly earnings report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 13,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0013.txt",
+    "domain": "finance",
+    "doc_type": "quarterly earnings report",
+    "query": "What are the risks, contradictions, or implications present in this quarterly earnings report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 14,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0014.txt",
+    "domain": "legal",
+    "doc_type": "data processing agreement",
+    "query": "What are the key facts and findings in this data processing agreement?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 14,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0014.txt",
+    "domain": "legal",
+    "doc_type": "data processing agreement",
+    "query": "What numerical values or calculations are present in this data processing agreement and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 14,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0014.txt",
+    "domain": "legal",
+    "doc_type": "data processing agreement",
+    "query": "What are the risks, contradictions, or implications present in this data processing agreement?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 15,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0015.txt",
+    "domain": "medical",
+    "doc_type": "pathology report",
+    "query": "What are the key facts and findings in this pathology report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 15,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0015.txt",
+    "domain": "medical",
+    "doc_type": "pathology report",
+    "query": "What numerical values or calculations are present in this pathology report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 15,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0015.txt",
+    "domain": "medical",
+    "doc_type": "pathology report",
+    "query": "What are the risks, contradictions, or implications present in this pathology report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 16,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0016.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What are the key facts and findings in this insurance claim document?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 16,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0016.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What numerical values or calculations are present in this insurance claim document and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 16,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0016.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What are the risks, contradictions, or implications present in this insurance claim document?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 17,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0017.txt",
+    "domain": "finance",
+    "doc_type": "loan application summary",
+    "query": "What are the key facts and findings in this loan application summary?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 17,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0017.txt",
+    "domain": "finance",
+    "doc_type": "loan application summary",
+    "query": "What numerical values or calculations are present in this loan application summary and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 17,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0017.txt",
+    "domain": "finance",
+    "doc_type": "loan application summary",
+    "query": "What are the risks, contradictions, or implications present in this loan application summary?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 18,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0018.txt",
+    "domain": "medical",
+    "doc_type": "clinical trial report",
+    "query": "What are the key facts and findings in this clinical trial report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 18,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0018.txt",
+    "domain": "medical",
+    "doc_type": "clinical trial report",
+    "query": "What numerical values or calculations are present in this clinical trial report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 18,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0018.txt",
+    "domain": "medical",
+    "doc_type": "clinical trial report",
+    "query": "What are the risks, contradictions, or implications present in this clinical trial report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 19,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0019.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What are the key facts and findings in this privacy audit report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 19,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0019.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What numerical values or calculations are present in this privacy audit report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 19,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0019.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What are the risks, contradictions, or implications present in this privacy audit report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 20,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0020.txt",
+    "domain": "medical",
+    "doc_type": "patient discharge summary",
+    "query": "What are the key facts and findings in this patient discharge summary?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 20,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0020.txt",
+    "domain": "medical",
+    "doc_type": "patient discharge summary",
+    "query": "What numerical values or calculations are present in this patient discharge summary and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 20,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0020.txt",
+    "domain": "medical",
+    "doc_type": "patient discharge summary",
+    "query": "What are the risks, contradictions, or implications present in this patient discharge summary?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 21,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0021.txt",
+    "domain": "medical",
+    "doc_type": "pathology report",
+    "query": "What are the key facts and findings in this pathology report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 21,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0021.txt",
+    "domain": "medical",
+    "doc_type": "pathology report",
+    "query": "What numerical values or calculations are present in this pathology report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 21,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0021.txt",
+    "domain": "medical",
+    "doc_type": "pathology report",
+    "query": "What are the risks, contradictions, or implications present in this pathology report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 22,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0022.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What are the key facts and findings in this medication review record?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 22,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0022.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What numerical values or calculations are present in this medication review record and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 22,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0022.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What are the risks, contradictions, or implications present in this medication review record?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 23,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0023.txt",
+    "domain": "legal",
+    "doc_type": "gdpr compliance assessment",
+    "query": "What are the key facts and findings in this gdpr compliance assessment?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 23,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0023.txt",
+    "domain": "legal",
+    "doc_type": "gdpr compliance assessment",
+    "query": "What numerical values or calculations are present in this gdpr compliance assessment and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 23,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0023.txt",
+    "domain": "legal",
+    "doc_type": "gdpr compliance assessment",
+    "query": "What are the risks, contradictions, or implications present in this gdpr compliance assessment?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 24,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0024.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What are the key facts and findings in this internal audit report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 24,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0024.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What numerical values or calculations are present in this internal audit report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 24,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0024.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What are the risks, contradictions, or implications present in this internal audit report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 25,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0025.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What are the key facts and findings in this medication review record?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 25,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0025.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What numerical values or calculations are present in this medication review record and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 25,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0025.txt",
+    "domain": "medical",
+    "doc_type": "medication review record",
+    "query": "What are the risks, contradictions, or implications present in this medication review record?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 26,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0026.txt",
+    "domain": "medical",
+    "doc_type": "surgical operation note",
+    "query": "What are the key facts and findings in this surgical operation note?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 26,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0026.txt",
+    "domain": "medical",
+    "doc_type": "surgical operation note",
+    "query": "What numerical values or calculations are present in this surgical operation note and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 26,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0026.txt",
+    "domain": "medical",
+    "doc_type": "surgical operation note",
+    "query": "What are the risks, contradictions, or implications present in this surgical operation note?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 27,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0027.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What are the key facts and findings in this insurance claim document?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 27,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0027.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What numerical values or calculations are present in this insurance claim document and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 27,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0027.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What are the risks, contradictions, or implications present in this insurance claim document?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 28,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0028.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What are the key facts and findings in this internal audit report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 28,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0028.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What numerical values or calculations are present in this internal audit report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 28,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0028.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What are the risks, contradictions, or implications present in this internal audit report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 29,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0029.txt",
+    "domain": "legal",
+    "doc_type": "employment contract",
+    "query": "What are the key facts and findings in this employment contract?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 29,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0029.txt",
+    "domain": "legal",
+    "doc_type": "employment contract",
+    "query": "What numerical values or calculations are present in this employment contract and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 29,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0029.txt",
+    "domain": "legal",
+    "doc_type": "employment contract",
+    "query": "What are the risks, contradictions, or implications present in this employment contract?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 30,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0030.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What are the key facts and findings in this privacy audit report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 30,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0030.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What numerical values or calculations are present in this privacy audit report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 30,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0030.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What are the risks, contradictions, or implications present in this privacy audit report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 31,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0031.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What are the key facts and findings in this insurance claim document?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 31,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0031.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What numerical values or calculations are present in this insurance claim document and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 31,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0031.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What are the risks, contradictions, or implications present in this insurance claim document?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 32,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0032.txt",
+    "domain": "medical",
+    "doc_type": "clinical trial report",
+    "query": "What are the key facts and findings in this clinical trial report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 32,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0032.txt",
+    "domain": "medical",
+    "doc_type": "clinical trial report",
+    "query": "What numerical values or calculations are present in this clinical trial report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 32,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0032.txt",
+    "domain": "medical",
+    "doc_type": "clinical trial report",
+    "query": "What are the risks, contradictions, or implications present in this clinical trial report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 33,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0033.txt",
+    "domain": "legal",
+    "doc_type": "gdpr compliance assessment",
+    "query": "What are the key facts and findings in this gdpr compliance assessment?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 33,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0033.txt",
+    "domain": "legal",
+    "doc_type": "gdpr compliance assessment",
+    "query": "What numerical values or calculations are present in this gdpr compliance assessment and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 33,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0033.txt",
+    "domain": "legal",
+    "doc_type": "gdpr compliance assessment",
+    "query": "What are the risks, contradictions, or implications present in this gdpr compliance assessment?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 34,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0034.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What are the key facts and findings in this internal audit report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 34,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0034.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What numerical values or calculations are present in this internal audit report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 34,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0034.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What are the risks, contradictions, or implications present in this internal audit report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 35,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0035.txt",
+    "domain": "legal",
+    "doc_type": "data processing agreement",
+    "query": "What are the key facts and findings in this data processing agreement?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 35,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0035.txt",
+    "domain": "legal",
+    "doc_type": "data processing agreement",
+    "query": "What numerical values or calculations are present in this data processing agreement and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 35,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0035.txt",
+    "domain": "legal",
+    "doc_type": "data processing agreement",
+    "query": "What are the risks, contradictions, or implications present in this data processing agreement?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 36,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0036.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What are the key facts and findings in this internal audit report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 36,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0036.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What numerical values or calculations are present in this internal audit report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 36,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0036.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What are the risks, contradictions, or implications present in this internal audit report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 37,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0037.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What are the key facts and findings in this privacy audit report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 37,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0037.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What numerical values or calculations are present in this privacy audit report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 37,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0037.txt",
+    "domain": "legal",
+    "doc_type": "privacy audit report",
+    "query": "What are the risks, contradictions, or implications present in this privacy audit report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 38,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0038.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What are the key facts and findings in this insurance claim document?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 38,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0038.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What numerical values or calculations are present in this insurance claim document and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 38,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0038.txt",
+    "domain": "finance",
+    "doc_type": "insurance claim document",
+    "query": "What are the risks, contradictions, or implications present in this insurance claim document?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 40,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0040.txt",
+    "domain": "medical",
+    "doc_type": "radiology report",
+    "query": "What are the key facts and findings in this radiology report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 40,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0040.txt",
+    "domain": "medical",
+    "doc_type": "radiology report",
+    "query": "What numerical values or calculations are present in this radiology report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 40,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0040.txt",
+    "domain": "medical",
+    "doc_type": "radiology report",
+    "query": "What are the risks, contradictions, or implications present in this radiology report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 41,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0041.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What are the key facts and findings in this internal audit report?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 41,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0041.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What numerical values or calculations are present in this internal audit report and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 41,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0041.txt",
+    "domain": "finance",
+    "doc_type": "internal audit report",
+    "query": "What are the risks, contradictions, or implications present in this internal audit report?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 42,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0042.txt",
+    "domain": "medical",
+    "doc_type": "patient discharge summary",
+    "query": "What are the key facts and findings in this patient discharge summary?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 42,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0042.txt",
+    "domain": "medical",
+    "doc_type": "patient discharge summary",
+    "query": "What numerical values or calculations are present in this patient discharge summary and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 42,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0042.txt",
+    "domain": "medical",
+    "doc_type": "patient discharge summary",
+    "query": "What are the risks, contradictions, or implications present in this patient discharge summary?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  },
+  {
+    "doc_id": 43,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0043.txt",
+    "domain": "legal",
+    "doc_type": "employment contract",
+    "query": "What are the key facts and findings in this employment contract?",
+    "answer": "",
+    "difficulty": "easy",
+    "type": "simple_retrieval"
+  },
+  {
+    "doc_id": 43,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0043.txt",
+    "domain": "legal",
+    "doc_type": "employment contract",
+    "query": "What numerical values or calculations are present in this employment contract and what do they indicate?",
+    "answer": "",
+    "difficulty": "medium",
+    "type": "calculation"
+  },
+  {
+    "doc_id": 43,
+    "doc_path": "/media/nandini-patil/OS1/Users/Nandini/Documents/Academics/6th Sem/Labs/MP/Hybrid LLM/data/synthetic/documents/doc_0043.txt",
+    "domain": "legal",
+    "doc_type": "employment contract",
+    "query": "What are the risks, contradictions, or implications present in this employment contract?",
+    "answer": "",
+    "difficulty": "hard",
+    "type": "synthesis"
+  }
+]

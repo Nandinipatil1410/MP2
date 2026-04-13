@@ -1,0 +1,43 @@
+DOMAIN: MEDICAL
+TYPE: Surgical Operation Note
+TITLE: Surgical Operation Note for Patient Emily J. Wilson
+============================================================
+
+Patient Information:
+
+Name: Emily J. Wilson
+Date of Birth: 1992-07-12
+Medical Record Number: 0123456
+Account Number: 9876543210
+Date of Surgery: 2024-02-20
+Surgeon: Dr. Rachel M. Lee
+Assistant: Dr. Michael T. Brown
+Anesthesiologist: Dr. David K. White
+
+Pre-Operative Diagnosis: Ovarian Cyst
+Post-Operative Diagnosis: Ovarian Cyst with torsion
+
+Operative Note:
+
+The patient, Emily J. Wilson, was taken to the operating room and placed in the supine position. General anesthesia was induced with 200mg of propofol and 100mcg of fentanyl. A Pfannenstiel incision was made and the abdomen was entered. The ovarian cyst was identified and found to be torsioned. The cyst was carefully untorsioned and removed. The patient received 1 liter of lactated Ringer's solution and 1 unit of packed red blood cells during the procedure. The estimated blood loss was 250ml. The patient's vital signs were stable throughout the procedure. The surgery lasted 2 hours and 15 minutes.
+
+Intraoperative blood gas results: pH 7.35, pCO2 35mmHg, pO2 95mmHg, HCO3 22mmol/L, BE -2mmol/L.
+
+Post-Operative Instructions:
+
+The patient will be transferred to the post-anesthesia care unit for recovery. The patient will receive 4mg of morphine for pain management and 10mg of metoclopramide for nausea. The patient will be monitored for signs of bleeding or infection. Follow-up appointment with Dr. Rachel M. Lee in 7-10 days.
+
+Pathology Results:
+
+The ovarian cyst was sent to pathology for examination. The results showed a benign ovarian cyst with no evidence of malignancy. The patient was informed of the results and will be scheduled for a follow-up appointment with Dr. Rachel M. Lee.
+
+Charges:
+
+Surgical fee: $10,000
+Anesthesia fee: $2,000
+Hospital stay: $5,000
+Total charges: $17,000
+
+Insurance Information:
+
+The patient has insurance with Blue Cross Blue Shield. The estimated out-of-pocket cost to the patient is $2,500.

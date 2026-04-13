@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentix Hybrid LLM</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v='20260409b') }}">
 </head>
+
 <body>
     <div class="app-shell">
         <aside class="sidebar">
             <div class="brand-block">
                 <div class="eyebrow">Privacy-First Intelligence Platform</div>
                 <h1>Sentix Hybrid LLM</h1>
-                <p>Operate secure document reasoning workflows with a modern control surface and protected execution flow.</p>
+                <p>Operate secure document reasoning workflows with a modern control surface and protected execution
+                    flow.</p>
             </div>
 
             <section class="panel">
@@ -28,7 +32,8 @@
                     <label for="groqApiKey">Groq API Key</label>
                     <div class="password-field">
                         <input id="groqApiKey" type="password" placeholder="Enter Groq API key">
-                        <button id="toggleApiKey" type="button" class="ghost-icon" aria-label="Toggle API key visibility">Show</button>
+                        <button id="toggleApiKey" type="button" class="ghost-icon"
+                            aria-label="Toggle API key visibility">Show</button>
                     </div>
                 </div>
 
@@ -63,8 +68,9 @@
             <section class="hero-card">
                 <div class="hero-copy">
                     <div class="eyebrow">Enterprise Reasoning Workspace</div>
-                    <h2>Secure hybrid intelligence without changing your backend logic</h2>
-                    <p>Initialize the orchestrator, load private source material, then run protected query and comparison workflows from a cleaner interface.</p>
+                    <h2>Secure hybrid intelligence</h2>
+                    <p>Initialize the orchestrator, load private source material, then run protected query and
+                        comparison workflows from a cleaner interface.</p>
                     <div class="hero-badges">
                         <span class="hero-badge">Private documents stay local</span>
                         <span class="hero-badge">Cloud planning only when needed</span>
@@ -107,7 +113,8 @@
 
                     <div class="field-group">
                         <label for="queryInput">Question</label>
-                        <textarea id="queryInput" rows="6" placeholder="Analyze the financial impact of the privacy policy and summarize the main risk areas."></textarea>
+                        <textarea id="queryInput" rows="6"
+                            placeholder="Analyze the financial impact of the privacy policy and summarize the main risk areas."></textarea>
                     </div>
 
                     <div class="query-controls">
@@ -146,13 +153,16 @@
                     </div>
 
                     <div class="scenario-grid">
-                        <button class="button tertiary scenario-button" data-scenario="medical">Medical Contraindication Analysis</button>
-                        <button class="button tertiary scenario-button" data-scenario="legal">Legal Compliance Check</button>
+                        <button class="button tertiary scenario-button" data-scenario="medical">Medical Contraindication
+                            Analysis</button>
+                        <button class="button tertiary scenario-button" data-scenario="legal">Legal Compliance
+                            Check</button>
                     </div>
 
                     <div class="field-group">
                         <label for="compareInput">Benchmark Question</label>
-                        <textarea id="compareInput" rows="4" placeholder="Summarize the main topics across all documents."></textarea>
+                        <textarea id="compareInput" rows="4"
+                            placeholder="Summarize the main topics across all documents."></textarea>
                     </div>
 
                     <div class="compare-actions">
@@ -193,4 +203,5 @@
 
     <script src="{{ url_for('static', filename='app.js', v='20260409b') }}"></script>
 </body>
+
 </html>

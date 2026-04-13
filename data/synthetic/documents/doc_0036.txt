@@ -1,0 +1,27 @@
+DOMAIN: FINANCE
+TYPE: Internal Audit Report
+TITLE: Internal Audit Report for Finance Department
+============================================================
+
+Introduction:
+This internal audit report is based on the examination of financial records and transactions for the period of January 1, 2022, to December 31, 2022, for the XYZ Corporation, under the supervision of Chief Financial Officer, Ms. Emily J. Wilson (Employee ID: EW1234). The audit aimed to assess the accuracy, completeness, and compliance of financial reporting with the Generally Accepted Accounting Principles (GAAP).
+
+Scope and Methodology:
+The scope of the audit included accounts payable, accounts receivable, payroll, and general ledger transactions. The methodology involved reviewing a sample of 500 transactions (out of a total of 10,000) selected based on a combination of high-value and high-risk criteria. The audit team consisted of three members, led by Senior Auditor, Mr. David L. Thompson (Employee ID: DT5678).
+
+Findings:
+1. Accounts Payable: The audit revealed that the average payment period for accounts payable was 45 days, which is within the company's policy of 30 to 60 days. However, the total accounts payable balance as of December 31, 2022, was $1,250,000, which is $150,000 higher than the budgeted amount. This discrepancy may be due to the increase in raw material costs and the subsequent delay in payment to suppliers.
+2. Accounts Receivable: The average collection period for accounts receivable was 60 days, which is slightly above the company's policy of 30 to 60 days. The total accounts receivable balance as of December 31, 2022, was $2,500,000. Notably, the bad debt expense for the year was $50,000, which is $20,000 higher than the previous year. This increase may be related to the economic downturn and its impact on the company's customers.
+3. Payroll: The audit found that the total payroll expense for the year was $5,000,000, which is $200,000 higher than the budgeted amount. This variance is largely due to the increase in employee benefits and the hiring of additional staff in the marketing department.
+Conclusion:
+The internal audit report highlights areas of improvement in the finance department, particularly in managing accounts payable and accounts receivable. The department should focus on streamlining payment processes and enhancing credit control measures to reduce the average payment and collection periods. Additionally, the increase in bad debt expense and payroll expense warrants further analysis to identify the underlying causes and implement corrective actions.
+Recommendations:
+1. Implement a more efficient payment system to reduce the average payment period for accounts payable.
+2. Enhance credit control measures to minimize bad debt expense.
+3. Conduct a thorough review of payroll expenses to identify areas for cost reduction.
+Appendix:
+Audit Team:
+- Mr. David L. Thompson (Employee ID: DT5678)
+- Ms. Sophia Patel (Employee ID: SP9012)
+- Mr. Michael Brown (Employee ID: MB1111)
+Date of Audit Report: February 15, 2023
