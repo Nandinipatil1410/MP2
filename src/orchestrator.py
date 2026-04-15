@@ -1,11 +1,12 @@
 import sys
 from typing import Dict, List
+from concurrent.futures import ThreadPoolExecutor
 import time
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from config.settings import LOCAL_MODEL, CLOUD_MODEL
+from config.settings import LOCAL_MODEL, CLOUD_MODEL, CHUNK_SIZE, CHUNK_OVERLAP, TOP_K_RETRIEVAL
 from document_processor import DocumentProcessor
 from vector_store import VectorStore
 from query_abstractor import QueryAbstractor
@@ -20,7 +21,7 @@ class HybridLLMOrchestrator:
     def __init__(self, groq_api_key: str = None):
         print("🚀 Initializing Privacy-Preserving Hybrid LLM System...")
         
-        self.doc_processor = DocumentProcessor(chunk_size=500, chunk_overlap=50)
+        self.doc_processor = DocumentProcessor(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
         self.vector_store = VectorStore()
         self.query_abstractor = QueryAbstractor()
         self.cloud_planner = CloudReasoningPlanner(api_key=groq_api_key, model=CLOUD_MODEL)
@@ -47,7 +48,15 @@ class HybridLLMOrchestrator:
             self.documents_loaded = True
             print(f"\n✓ Loaded {len(all_chunks)} document chunks into vector store")
 
-    def process_query_hybrid(self, query: str, top_k: int = 3) -> Dict[str, any]:
+    def get_system_stats(self) -> Dict[str, any]:
+        """Get system statistics for the dashboard"""
+        return {
+            'documents_count': len(self.vector_store.documents) if hasattr(self.vector_store, 'documents') else 0,
+            'chunks_count': self.vector_store.index.ntotal if (hasattr(self.vector_store, 'index') and self.vector_store.index) else 0,
+            'is_ready': self.documents_loaded
+        }
+
+    def process_query_hybrid(self, query: str, top_k: int = TOP_K_RETRIEVAL) -> Dict[str, any]:
         
         metrics = MetricsTracker()
         total_start = time.time()
@@ -86,12 +95,13 @@ class HybridLLMOrchestrator:
             'success': execution_result['success'],
             'answer': execution_result.get('answer', ''),
             'mode': 'hybrid',
+            'abstracted_query': abstracted_query,
             'latency': metrics.total_time,
             'privacy_score': privacy_score,
             'reasoning_depth': len(reasoning_plan)
         }
 
-    def process_query_local_only(self, query: str, top_k: int = 3) -> Dict[str, any]:
+    def process_query_local_only(self, query: str, top_k: int = TOP_K_RETRIEVAL) -> Dict[str, any]:
         
         metrics = MetricsTracker()
         total_start = time.time()
@@ -121,5 +131,75 @@ class HybridLLMOrchestrator:
             'success': True,
             'answer': answer,
             'mode': 'local',
-            'latency': metrics.total_time
+            'abstracted_query': query, # No abstraction in local
+            'latency': metrics.total_time,
+            'privacy_score': 1.0,
+            'reasoning_depth': 2
+        }
+
+    def process_query_cloud_only(self, query: str) -> Dict[str, any]:
+        """Process query using only cloud LLM (no RAG)"""
+        metrics = MetricsTracker()
+        total_start = time.time()
+        
+        # Cloud generation (no retrieval)
+        gen_start = time.time()
+        try:
+            answer = self.cloud_planner.get_completion(
+                "You are a helpful expert assistant.", 
+                query
+            )
+            success = True
+        except Exception as e:
+            answer = f"Cloud execution error: {str(e)}"
+            success = False
+            
+        metrics.generation_time = time.time() - gen_start
+        metrics.total_time = time.time() - total_start
+        
+        return {
+            'success': success,
+            'answer': answer,
+            'mode': 'cloud-only',
+            'abstracted_query': query, # No abstraction in cloud baseline
+            'latency': metrics.total_time,
+            'privacy_score': 0.1, # Sending full query to cloud
+            'reasoning_depth': 1
+        }
+
+    def estimate_reasoning_depth(self, result: Dict[str, any]) -> int:
+        """Estimate reasoning depth based on answer length and structure"""
+        answer = result.get('answer', '')
+        if not answer: return 0
+        
+        depth = 1
+        if len(answer) > 200: depth += 1
+        if len(answer) > 500: depth += 1
+        if "\n" in answer: depth += 1
+        if "." in answer: depth += 1
+        
+        return min(depth, 5)
+
+    def compare_approaches(self, query: str) -> Dict[str, any]:
+        """Compare all three processing modes in parallel"""
+        print(f"\n📊 --- Comparing All Approaches for: {query} ---")
+        
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            hybrid_future = executor.submit(self.process_query_hybrid, query)
+            local_future = executor.submit(self.process_query_local_only, query)
+            cloud_future = executor.submit(self.process_query_cloud_only, query)
+            
+            hybrid_result = hybrid_future.result()
+            local_result = local_future.result()
+            cloud_result = cloud_future.result()
+            
+        # Re-estimate depth for cloud-only and local-only if needed
+        local_result['reasoning_depth'] = self.estimate_reasoning_depth(local_result)
+        cloud_result['reasoning_depth'] = self.estimate_reasoning_depth(cloud_result)
+        
+        return {
+            'query': query,
+            'hybrid': hybrid_result,
+            'local_only': local_result,
+            'cloud_only': cloud_result
         }

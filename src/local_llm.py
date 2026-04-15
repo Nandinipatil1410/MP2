@@ -88,23 +88,29 @@ class LocalLLMExecutor:
         """Create prompt for local LLM execution"""
         plan_text = "\n".join([f"{i}. {step}" for i, step in enumerate(plan, 1)])
         
-        prompt = f"""You are a helpful AI assistant. Answer the user's question based on the provided context.
+        prompt = f"""### SYSTEM: You are a senior expert analyst. Provide a professional expert review based on the following document context.
+        
+### USER QUESTION: {query}
 
-User Question: {query}
-
-Reasoning Plan:
+### REASONING PLAN:
 {plan_text}
 
-Context (Retrieved Documents):
+### CONTEXT:
 {context}
 
-Follow the reasoning plan step by step and provide a clear, accurate answer based only on the information in the context.
+### STRICT INSTRUCTIONS:
+1. Provide ONLY your synthesized expert review. 
+2. Do NOT mention "Document 1", "According to the context", or any other source markers.
+3. Do NOT repeat the input text or context markers.
+4. Follow the reasoning plan to form a comprehensive, polished summary.
+5. If the context is technical or bibliographic, extract the underlying themes and synthesize them into a readable expert perspective.
+6. START YOUR ANSWER DIRECTLY WITH THE EXPERT REVIEW.
 
-Answer:"""
+### EXPERT REVIEW:"""
         
         return prompt
     
-    def _call_ollama(self, prompt: str, max_tokens: int = 500) -> str:
+    def _call_ollama(self, prompt: str, max_tokens: int = 1024) -> str:
         """Call Ollama API for generation"""
         url = f"{self.ollama_url}/api/generate"
         
@@ -113,8 +119,11 @@ Answer:"""
             "prompt": prompt,
             "stream": False,
             "options": {
-                "temperature": 0.7,
-                "num_predict": max_tokens
+                "temperature": 0.5,
+                "num_predict": max_tokens,
+                "repeat_penalty": 1.2,
+                "top_p": 0.9,
+                "stop": ["###", "Context:", "User Question:"]
             }
         }
         

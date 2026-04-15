@@ -27,9 +27,9 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 # Vector Database Settings
-CHUNK_SIZE = 500
-CHUNK_OVERLAP = 50
-TOP_K_RETRIEVAL = 3
+CHUNK_SIZE = 1000
+CHUNK_OVERLAP = 100
+TOP_K_RETRIEVAL = 5
 
 # Query Abstraction Settings
 SENSITIVE_KEYWORDS = [

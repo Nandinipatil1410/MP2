@@ -17,13 +17,63 @@ class DocumentProcessor:
         self.chunk_overlap = chunk_overlap
     
     def process_pdf(self, file_path: str) -> str:
-        """Extract text from PDF file"""
+        """Extract text from PDF file with multiple fallbacks and OCR"""
         text = ""
         try:
+            # 1. Try PyPDF2 (fastest)
             with open(file_path, 'rb') as file:
                 pdf_reader = PyPDF2.PdfReader(file)
+                num_pages = len(pdf_reader.pages)
                 for page in pdf_reader.pages:
-                    text += page.extract_text() + "\n"
+                    text += (page.extract_text() or "") + "\n"
+            
+            # 2. Check if extraction is "suspiciously" low quality
+            # (e.g., only copyright notice from a multi-page doc)
+            lines = [l.strip() for l in text.split('\n') if l.strip()]
+            unique_lines = set(lines)
+            
+            # Heuristic: If it's a multi-page doc but very few unique lines, it's likely scanned or watermarked
+            is_suspicious = False
+            if num_pages > 1 and len(unique_lines) < num_pages: 
+                is_suspicious = True
+            if "Copyright" in text and len(unique_lines) < 3:
+                is_suspicious = True
+                
+            if is_suspicious or not text.strip():
+                print(f"  ⚠️  Standard extraction failed or returned low-quality text for {Path(file_path).name}. Trying pdfminer...")
+                from pdfminer.high_level import extract_text as miner_extract
+                text = miner_extract(file_path)
+            
+            # 3. Final Fallback: OCR for scanned documents
+            # If still suspiciously short text after pdfminer
+            if len(text.strip()) < 100 * num_pages: # Heuristic: less than 100 chars per page
+                print(f"  🔍 Document {Path(file_path).name} appears to be scanned. Running OCR (this may take a while)...")
+                try:
+                    from pdf2image import convert_from_path
+                    import easyocr
+                    import numpy as np
+                    
+                    # Initialize reader (lazy load)
+                    reader = easyocr.Reader(['en'])
+                    
+                    # Convert PDF to images
+                    images = convert_from_path(file_path)
+                    
+                    ocr_text = ""
+                    for i, image in enumerate(images):
+                        # Convert PIL image to numpy array for easyocr
+                        img_np = np.array(image)
+                        results = reader.readtext(img_np, detail=0)
+                        ocr_text += " ".join(results) + "\n"
+                    
+                    if len(ocr_text.strip()) > len(text.strip()):
+                        text = ocr_text
+                        print(f"  ✓ OCR successful for {Path(file_path).name}")
+                except ImportError as e:
+                    print(f"  ✗ OCR failed: Optional dependencies missing. {e}")
+                except Exception as e:
+                    print(f"  ✗ OCR failed: {e}")
+                    
         except Exception as e:
             print(f"Error processing PDF: {e}")
         return text
