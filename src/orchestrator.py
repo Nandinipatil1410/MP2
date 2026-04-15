@@ -19,7 +19,7 @@ from metrics import MetricsTracker
 class HybridLLMOrchestrator:
     
     def __init__(self, groq_api_key: str = None):
-        print("🚀 Initializing Privacy-Preserving Hybrid LLM System...")
+        print(" Initializing Privacy-Preserving Hybrid LLM System...")
         
         self.doc_processor = DocumentProcessor(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
         self.vector_store = VectorStore()
@@ -29,24 +29,24 @@ class HybridLLMOrchestrator:
         
         self.documents_loaded = False
         
-        print("✓ All components initialized")
+        print(" All components initialized")
     
     def load_documents(self, file_paths: List[str]):
-        print(f"\n📄 Processing {len(file_paths)} documents...")
+        print(f"\n Processing {len(file_paths)} documents...")
         
         all_chunks = []
         for file_path in file_paths:
             try:
                 chunks = self.doc_processor.process_and_chunk(file_path)
                 all_chunks.extend(chunks)
-                print(f"  ✓ Processed: {Path(file_path).name} ({len(chunks)} chunks)")
+                print(f"   Processed: {Path(file_path).name} ({len(chunks)} chunks)")
             except Exception as e:
-                print(f"  ✗ Error processing {file_path}: {e}")
+                print(f"   Error processing {file_path}: {e}")
         
         if all_chunks:
             self.vector_store.build_index(all_chunks)
             self.documents_loaded = True
-            print(f"\n✓ Loaded {len(all_chunks)} document chunks into vector store")
+            print(f"\n Loaded {len(all_chunks)} document chunks into vector store")
 
     def get_system_stats(self) -> Dict[str, any]:
         """Get system statistics for the dashboard"""
@@ -64,7 +64,7 @@ class HybridLLMOrchestrator:
         if not self.documents_loaded:
             return {'success': False, 'error': 'No documents loaded.', 'mode': 'hybrid'}
 
-        print(f"\n🔍 HYBRID MODE: {query[:100]}")
+        print(f"\n HYBRID MODE: {query[:100]}")
 
         # Query abstraction
         abstracted_query, abstraction_meta = self.query_abstractor.abstract_query(query)
@@ -109,7 +109,7 @@ class HybridLLMOrchestrator:
         if not self.documents_loaded:
             return {'success': False, 'error': 'No documents loaded.', 'mode': 'local'}
 
-        print(f"\n🔍 LOCAL MODE: {query[:100]}")
+        print(f"\n LOCAL MODE: {query[:100]}")
 
         # Retrieval (timed)
         retrieval_start = time.time()

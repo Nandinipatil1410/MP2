@@ -160,7 +160,7 @@ class LLMJudge:
             # Model names can change over time; "gemini-flash-latest" is a safer default.
             self.judge_model = (os.getenv("GEMINI_JUDGE_MODEL") or "gemini-flash-latest").strip()
         elif self.judge_provider == "ollama":
-            self.judge_model = "mistral"
+            self.judge_model = "qwen2:0.5b"
         else:
             self.judge_model = "llama-3.3-70b-versatile"
 
@@ -333,18 +333,13 @@ Return valid JSON:
             try:
                 return self._call_gemini(prompt)
             except Exception as e:
-                print(f"⚠️ Gemini Judge failed: {e}")
+                print(f" Gemini Judge failed: {e}")
                 # Mark Gemini as unavailable so we don't try it again in this session
                 LLMJudge._gemini_available = False
                 
-                if self._check_ollama():
-                    print("🔄 Falling back to local Ollama judge...")
-                    self.judge_provider = "ollama"
-                    self.judge_model = "mistral"
-                    return self._call_ollama(prompt)
-                else:
-                    print("⚠️ Ollama unavailable. Falling back to heuristic judge.")
-                    self.judge_provider = "heuristic"
+                print(" Falling back to heuristic judge for stability...")
+                self.judge_provider = "heuristic"
+                return self._call_heuristic(prompt)
                     # Return special marker for fallback handling if needed
                     raise e
 
@@ -581,23 +576,24 @@ Return valid JSON:
         local_eval = self._fallback_answer_evaluation(question, answer_local, reference_text)
         hybrid_eval = self._fallback_answer_evaluation(question, answer_hybrid, reference_text)
 
-        local_score = local_eval["overall_score"]
-        hybrid_score = hybrid_eval["overall_score"]
+        local_score = round(local_eval["overall_score"], 2)
+        hybrid_score = round(hybrid_eval["overall_score"], 2)
 
-        if abs(hybrid_score - local_score) < 0.3:
+        # Higher score must win. Tie only if practically identical.
+        if abs(hybrid_score - local_score) <= 0.2:
             winner = "Tie"
             strength = "Weak"
         elif hybrid_score > local_score:
             winner = "B"
-            strength = "Moderate" if hybrid_score - local_score < 1.0 else "Strong"
+            strength = "Moderate" if (hybrid_score - local_score) < 2.0 else "Strong"
         else:
             winner = "A"
-            strength = "Moderate" if local_score - hybrid_score < 1.0 else "Strong"
+            strength = "Moderate" if (local_score - hybrid_score) < 2.0 else "Strong"
 
         return {
             "winner": winner,
-            "answer_a_score": round(local_score, 2),
-            "answer_b_score": round(hybrid_score, 2),
+            "answer_a_score": local_score,
+            "answer_b_score": hybrid_score,
             "key_differences": [
                 "Hybrid answers may include more structure when planning helps, but that depends on the query and docs.",
                 "Local-only answers can be equally strong when retrieval captures the right context.",
