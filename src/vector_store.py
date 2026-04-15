@@ -44,7 +44,7 @@ class VectorStore:
         # Store documents
         self.documents = documents
         
-        print(f"✓ Built index with {len(documents)} documents")
+        print(f" Built index with {len(documents)} documents")
     
     def add_documents(self, new_documents: List[Dict[str, str]]):
         """Add new documents to existing index"""
@@ -58,7 +58,7 @@ class VectorStore:
         self.index.add(embeddings)
         self.documents.extend(new_documents)
         
-        print(f"✓ Added {len(new_documents)} documents. Total: {len(self.documents)}")
+        print(f" Added {len(new_documents)} documents. Total: {len(self.documents)}")
     
     def search(self, query: str, top_k: int = 3) -> List[Dict[str, any]]:
         """Search for most similar documents"""
@@ -96,7 +96,7 @@ class VectorStore:
         with open(docs_path, 'wb') as f:
             pickle.dump(self.documents, f)
         
-        print(f"✓ Saved vector store to {self.vector_db_path}")
+        print(f" Saved vector store to {self.vector_db_path}")
     
     def load(self, name: str = "vector_store"):
         """Load index and documents from disk"""
@@ -114,14 +114,14 @@ class VectorStore:
         with open(docs_path, 'rb') as f:
             self.documents = pickle.load(f)
         
-        print(f"✓ Loaded vector store with {len(self.documents)} documents")
+        print(f" Loaded vector store with {len(self.documents)} documents")
         return True
     
     def clear(self):
         """Clear the vector store"""
         self.index = None
         self.documents = []
-        print("✓ Vector store cleared")
+        print(" Vector store cleared")
     
     def get_stats(self) -> Dict[str, any]:
         """Get statistics about the vector store"""

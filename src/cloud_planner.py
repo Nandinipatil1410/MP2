@@ -27,7 +27,7 @@ class CloudReasoningPlanner:
         self.model = model or CLOUD_MODEL
         
         if not self.api_key:
-            print("⚠️  Warning: No Groq API key found. Using fallback mode.")
+            print("  Warning: No Groq API key found. Using fallback mode.")
             self.client = None
         else:
             self.client = Groq(api_key=self.api_key)
@@ -107,9 +107,9 @@ Strict Requirements:
         for line in lines:
             line = line.strip()
             # Match numbered steps
-            if line and (line[0].isdigit() or line.startswith('-') or line.startswith('•')):
+            if line and (line[0].isdigit() or line.startswith('-') or line.startswith('')):
                 # Remove numbering
-                step = line.lstrip('0123456789.-•) ').strip()
+                step = line.lstrip('0123456789.-) ').strip()
                 if step:
                     steps.append(step)
         

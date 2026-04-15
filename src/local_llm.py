@@ -27,10 +27,10 @@ class LocalLLMExecutor:
         try:
             response = requests.get(f"{self.ollama_url}/api/tags")
             if response.status_code == 200:
-                print(f"✓ Ollama is running")
+                print(f" Ollama is running")
                 return True
         except:
-            print("⚠️  Warning: Ollama is not running or not accessible")
+            print("  Warning: Ollama is not running or not accessible")
             print("   Start Ollama with: ollama serve")
             return False
     
@@ -157,9 +157,9 @@ if __name__ == "__main__":
     executor = LocalLLMExecutor()
     
     if executor.check_model_available():
-        print(f"✓ Model '{executor.model}' is available")
+        print(f" Model '{executor.model}' is available")
     else:
-        print(f"⚠️  Model '{executor.model}' not found. Pull it with: ollama pull {executor.model}")
+        print(f"  Model '{executor.model}' not found. Pull it with: ollama pull {executor.model}")
     
     # Test simple generation
     test_response = executor.generate_simple("Say hello in one sentence.")
