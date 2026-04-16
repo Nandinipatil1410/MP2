@@ -32,7 +32,7 @@ class CloudReasoningPlanner:
         else:
             self.client = Groq(api_key=self.api_key)
     
-    def generate_reasoning_plan(self, abstract_query: str) -> Dict[str, any]:
+    def generate_reasoning_plan(self, abstract_query: str, expert_mode: bool = False) -> Dict[str, any]:
         """
         Generate a step-by-step reasoning plan for the query
         Returns structured reasoning steps
@@ -45,7 +45,17 @@ class CloudReasoningPlanner:
                 'model': 'fallback'
             }
         
-        prompt = self._create_planning_prompt(abstract_query)
+        system_prompt = (
+            "You are a strategic reasoning planner for a Privacy-Preserving Hybrid LLM system. "
+            "Your role is to generate a structured execution plan that a local agent will follow to process sensitive data. "
+            "STRICT RULES:\n"
+            "1. You NEVER have access to the actual document content.\n"
+            "2. NEVER ask for more information, filenames, or specific data.\n"
+            "3. ALWAYS generate a plan based on the logical intent of the query.\n"
+            "4. Even if you don't know the document, plan the steps an expert would take to analyze it."
+        )
+        
+        prompt = self._create_planning_prompt(abstract_query, expert_mode)
         
         try:
             response = self.client.chat.completions.create(
@@ -53,7 +63,7 @@ class CloudReasoningPlanner:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a reasoning planner. Generate step-by-step reasoning plans without accessing any private data. Focus only on the logical structure."
+                        "content": system_prompt
                     },
                     {
                         "role": "user",
@@ -81,13 +91,83 @@ class CloudReasoningPlanner:
                 'error': str(e),
                 'plan': self._generate_fallback_plan(abstract_query)
             }
-    
-    def _create_planning_prompt(self, query: str) -> str:
+
+    def synthesize(self, query: str, local_findings: str, expert_mode: bool = False) -> str:
+        """
+        Use the cloud model to synthesize a rich final answer from local extracted findings.
+        This is the key hybrid advantage: local model extracts private data safely,
+        cloud model reasons over the sanitized findings to produce a superior response.
+        Returns None if cloud is unavailable (caller should fall back to local synthesis).
+        """
+        if not self.client:
+            return None
+
+        if expert_mode:
+            system_prompt = (
+                "You are a senior academic peer reviewer with expertise in writing detailed, "
+                "critical, and well-structured expert reviews. Your reviews are precise, "
+                "evidence-grounded, and provide genuine critical insight."
+            )
+            user_prompt = f"""Below are findings extracted from a private document about: "{query}"
+
+--- LOCAL FINDINGS ---
+{local_findings}
+--- END FINDINGS ---
+
+Write a comprehensive expert review (3-5 paragraphs, no bullet points) that:
+1. Summarizes the document's scope and core contribution
+2. Highlights specific strengths with evidence from the findings
+3. Identifies concrete gaps, limitations, or weaknesses
+4. Gives an overall scholarly assessment
+
+Do NOT invent information not present in the findings. Be analytical, not descriptive."""
+        else:
+            system_prompt = "You are a helpful, precise assistant that synthesizes research findings into clear, direct answers."
+            user_prompt = f"""Answer this question: "{query}"
+
+Using ONLY the following extracted findings from a private document:
+--- FINDINGS ---
+{local_findings}
+--- END ---
+
+Provide a clear, concise, well-structured answer. Do not invent facts not in the findings."""
+
+        try:
+            print("     -> Phase 3 [Cloud Synthesis]: Using cloud model for richer response...")
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.4,
+                max_tokens=1024
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"     -> Cloud synthesis failed ({e}), falling back to local...")
+            return None
+
+    def _create_planning_prompt(self, query: str, expert_mode: bool = False) -> str:
         """Create a prompt for plan generation"""
+        if expert_mode:
+            return f"""Given this query: "{query}"
+
+As an elite research strategist, generate a comprehensive 6-step reasoning plan for a professional academic review and deep analysis.
+The plan must cover:
+1. Contextual Introduction and Objective Mapping.
+2. Structural Deconstruction of the source material.
+3. Technical Rigor and Methodology Validation.
+4. Identification of Novelty and Significant Contributions.
+5. Critical Evaluation of Limitations and Clarity.
+6. Synthesis of Executive Findings.
+
+Format your response as numbered steps only. Do not provide any conversational filler."""
+        
         return f"""Given this query: "{query}"
 
-Generate a highly efficient, concise step-by-step reasoning plan to answer this query.
-The plan should be the MINIMAL number of logical steps (MAXIMUM 5) required to extract the answer from private documents.
+Generate a highly efficient, concise step-by-step reasoning plan (MAX 5 steps) to answer this query.
+Focus only on the reasoning structure required to extract the answer from private documents.
 
 Format your response as numbered steps:
 1. [First reasoning step]
@@ -96,7 +176,6 @@ Format your response as numbered steps:
 
 Strict Requirements:
 - NO MORE THAN 5 STEPS.
-- Avoid redundant steps or minor details.
 - Focus only on the reasoning structure, not on specific data."""
     
     def _parse_plan(self, plan_text: str) -> List[str]:

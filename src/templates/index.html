@@ -14,57 +14,7 @@
 
 <body>
     <div class="app-shell">
-        <aside class="sidebar">
-            <div class="brand-block">
-                <div class="eyebrow">Privacy-First Intelligence Platform</div>
-                <h1>Sentix Hybrid LLM</h1>
-                <p>Operate secure document reasoning workflows with a modern control surface and protected execution
-                    flow.</p>
-            </div>
-
-            <section class="panel">
-                <div class="panel-header">
-                    <h2>System Control</h2>
-                    <p>Configure the runtime and load protected document assets.</p>
-                </div>
-
-                <div class="field-group">
-                    <label for="groqApiKey">Groq API Key</label>
-                    <div class="password-field">
-                        <input id="groqApiKey" type="password" placeholder="Enter Groq API key">
-                        <button id="toggleApiKey" type="button" class="ghost-icon"
-                            aria-label="Toggle API key visibility">Show</button>
-                    </div>
-                </div>
-
-                <button id="initializeBtn" class="button primary">Initialize Pipeline</button>
-            </section>
-
-            <section class="panel">
-                <div class="panel-header">
-                    <h2>Document Management</h2>
-                    <p>Upload PDF, TXT, or DOCX files before loading them into the protected workspace.</p>
-                </div>
-
-                <label for="documentsInput" class="upload-dropzone">
-                    <input id="documentsInput" type="file" multiple accept=".pdf,.txt,.docx">
-                    <span class="upload-title">Select documents</span>
-                    <span class="upload-copy">Drag files here or browse from your device.</span>
-                </label>
-
-                <div id="selectedFiles" class="file-list empty">No documents selected.</div>
-                <button id="loadDocumentsBtn" class="button secondary">Load Documents</button>
-            </section>
-
-            <div id="statusBanner" class="status-banner hidden"></div>
-        </aside>
-
         <main class="main-content">
-            <section class="topbar">
-                <div class="topbar-pill">Protected Orchestration Console</div>
-                <!-- <div class="topbar-copy">Modern interface, same backend workflow.</div> -->
-            </section>
-
             <section class="hero-card">
                 <div class="hero-copy">
                     <div class="eyebrow">Enterprise Reasoning Workspace</div>
@@ -80,7 +30,7 @@
                 <div class="hero-metrics">
                     <div class="metric-card">
                         <span class="metric-label">Runtime</span>
-                        <strong id="metricRuntime">Not initialized</strong>
+                        <strong id="metricRuntime">Initializing...</strong>
                     </div>
                     <div class="metric-card">
                         <span class="metric-label">Documents</span>
@@ -88,17 +38,36 @@
                     </div>
                     <div class="metric-card">
                         <span class="metric-label">Models</span>
-                        <strong id="metricModels">Unavailable</strong>
+                        <strong id="metricModels">Configured</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Integrated Control Panel -->
+            <section class="control-panel">
+                <div class="panel-section">
+                    <h3>Document Upload</h3>
+                    <label for="documentsInput" class="upload-dropzone-inline">
+                        <input id="documentsInput" type="file" multiple accept=".pdf,.txt,.docx">
+                        <span class="upload-title">Add source material</span>
+                    </label>
+                    <div id="selectedFiles" class="file-list-compact empty">No documents</div>
+                    <button id="loadDocumentsBtn" class="button secondary small">Load to Vector Store</button>
+                </div>
+                
+                <div class="panel-divider"></div>
+
+                <div class="panel-section">
+                    <h3>Service Status</h3>
+                    <div id="statusBanner" class="status-banner-inline">Ready</div>
+                    <div class="config-summary">
+                        <p>Privacy is enforced locally. Cloud is only used for high-level synthesis of masked data.</p>
                     </div>
                 </div>
             </section>
 
             <section class="tabs-card">
                 <div class="tabs-header">
-                    <div class="tabs-heading">
-                        <div class="section-kicker">Workspace</div>
-                        <h3>Operational Views</h3>
-                    </div>
                     <div class="tab-switcher">
                         <button class="tab-button active" data-tab="queryTab">Query Workspace</button>
                         <button class="tab-button" data-tab="compareTab">Model Comparison</button>
@@ -106,18 +75,19 @@
                 </div>
 
                 <div id="queryTab" class="tab-panel active">
-                    <div class="section-heading">
-                        <h3>Run a protected reasoning request</h3>
-                        <p>Choose the execution strategy and review the resulting answer with runtime details.</p>
-                    </div>
-
                     <div class="field-group">
                         <label for="queryInput">Question</label>
-                        <textarea id="queryInput" rows="6"
-                            placeholder="Analyze the financial impact of the privacy policy and summarize the main risk areas."></textarea>
+                        <textarea id="queryInput" rows="4"
+                            placeholder="Analyze the documents and summarize key findings..."></textarea>
                     </div>
 
                     <div class="query-controls">
+                        <div class="field-group">
+                            <label for="documentSelect">Knowledge Scope</label>
+                            <select id="documentSelect">
+                                <option value="all">Global (All Documents)</option>
+                            </select>
+                        </div>
                         <div class="field-group">
                             <label for="modeSelect">Execution Strategy</label>
                             <select id="modeSelect">
@@ -125,16 +95,30 @@
                                 <option value="local_only">Local Only (Full On-Premises)</option>
                             </select>
                         </div>
+                        <div class="expert-toggle">
+                            <input type="checkbox" id="expertMode">
+                            <label for="expertMode">Expert Mode</label>
+                        </div>
                         <button id="runQueryBtn" class="button primary">Run Analysis</button>
                     </div>
 
                     <div id="queryStatus" class="inline-status hidden"></div>
                     <div id="queryResult" class="results-grid hidden">
-                        <article class="result-card answer-card">
+                        <article class="result-card answer-card full-width">
                             <div class="result-card-header">
-                                <h4>Decision Result</h4>
+                                <div class="card-title-row">
+                                    <h4>Expert Analysis</h4>
+                                    <button id="copyAnalysisBtn" class="ghost-icon small">Copy Result</button>
+                                </div>
                             </div>
                             <div id="answerContent" class="formatted-output"></div>
+                        </article>
+
+                        <article id="reasoningCard" class="result-card reasoning-card hidden">
+                            <div class="result-card-header">
+                                <h4>Reasoning Protocol</h4>
+                            </div>
+                            <div id="reasoningTimeline" class="reasoning-timeline"></div>
                         </article>
 
                         <article class="result-card trace-card">
@@ -147,25 +131,22 @@
                 </div>
 
                 <div id="compareTab" class="tab-panel">
-                    <div class="section-heading">
-                        <h3>Benchmark execution strategies side by side</h3>
-                        <p>Compare privacy, reasoning quality, completeness, and latency across all modes.</p>
-                    </div>
-
-                    <div class="scenario-grid">
-                        <button class="button tertiary scenario-button" data-scenario="medical">Medical Contraindication
-                            Analysis</button>
-                        <button class="button tertiary scenario-button" data-scenario="legal">Legal Compliance
-                            Check</button>
-                    </div>
-
                     <div class="field-group">
                         <label for="compareInput">Benchmark Question</label>
                         <textarea id="compareInput" rows="4"
-                            placeholder="Summarize the main topics across all documents."></textarea>
+                            placeholder="Compare answers across local and hybrid modes..."></textarea>
                     </div>
 
                     <div class="compare-actions">
+                        <div class="field-group">
+                            <select id="compareDocumentSelect">
+                                <option value="all">All Documents</option>
+                            </select>
+                        </div>
+                        <div class="expert-toggle">
+                            <input type="checkbox" id="compareExpertMode">
+                            <label for="compareExpertMode">Expert Mode</label>
+                        </div>
                         <button id="runCompareBtn" class="button primary">Generate Comparative Report</button>
                     </div>
 
@@ -174,7 +155,6 @@
                         <section class="result-card">
                             <div class="result-card-header">
                                 <h4>LLM Judge Verdict</h4>
-                                <p>Independent scoring for Local-only vs Hybrid answers.</p>
                             </div>
                             <div id="judgeMeta" class="chip-row"></div>
                             <div id="judgeWinner" class="verdict-box hidden"></div>
@@ -198,6 +178,8 @@
                     </div>
                 </div>
             </section>
+        </main>
+    </div>
         </main>
     </div>
 

@@ -1,12 +1,14 @@
 """
 Flask Web Interface
-Privacy-Preserving Hybrid LLM System
+Privacy-Preserving Hybrid LLM System - Hardened Unified Dashboard
 """
 from __future__ import annotations
 
 import os
+import time
 from pathlib import Path
 from typing import Any
+from concurrent.futures import ThreadPoolExecutor
 
 from flask import Flask, jsonify, render_template, request
 from dotenv import load_dotenv
@@ -15,8 +17,8 @@ from werkzeug.utils import secure_filename
 from orchestrator import HybridLLMOrchestrator
 from evaluation import LLMJudge
 
+# Load env before anything else
 load_dotenv()
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DOCUMENTS_DIR = BASE_DIR / "data" / "documents"
@@ -25,264 +27,247 @@ ALLOWED_EXTENSIONS = {"pdf", "txt", "docx"}
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
-
 STATE: dict[str, Any] = {
     "orchestrator": None,
-    "documents_loaded": False,
-    "loaded_files": [],
-    "groq_api_key": "",
 }
-
 
 def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-def save_uploaded_files(files) -> list[str]:
-    DOCUMENTS_DIR.mkdir(parents=True, exist_ok=True)
-    saved_paths = []
-
-    for uploaded_file in files:
-        if not uploaded_file or not uploaded_file.filename:
-            continue
-        if not allowed_file(uploaded_file.filename):
-            continue
-
-        filename = secure_filename(uploaded_file.filename)
-        file_path = DOCUMENTS_DIR / filename
-        uploaded_file.save(file_path)
-        saved_paths.append(str(file_path))
-
-    return saved_paths
-
-
-def require_orchestrator():
-    if STATE["orchestrator"] is None:
-        return False, jsonify({"success": False, "error": "Initialize the system first."}), 400
-    return True, None, None
-
-
-@app.get("/")
+@app.route("/")
 def index():
     return render_template("index.html")
 
-
-@app.get("/api/state")
+@app.route("/api/state", methods=["GET"])
 def get_state():
-    stats = None
-    if STATE["orchestrator"] is not None:
-        try:
-            stats = STATE["orchestrator"].get_system_stats()
-        except Exception:
-            stats = None
-
-    return jsonify(
-        {
-            "success": True,
-            "initialized": STATE["orchestrator"] is not None,
-            "documents_loaded": STATE["documents_loaded"],
-            "loaded_files": STATE["loaded_files"],
-            "stats": stats,
+    orch = STATE["orchestrator"]
+    if not orch:
+        return jsonify({"initialized": False})
+    
+    return jsonify({
+        "initialized": orch.initialized,
+        "documents_loaded": orch.documents_loaded,
+        "loaded_files": orch.get_document_list(),
+        "stats": {
+            "local_model": orch.local_executor.model_name if hasattr(orch.local_executor, "model_name") else "mistral:latest",
+            "cloud_model": os.getenv("GROQ_MODEL", "llama3-70b-8192")
         }
-    )
+    })
 
+@app.route("/api/documents", methods=["GET"])
+def get_documents():
+    orch = STATE["orchestrator"]
+    if not orch:
+        return jsonify([])
+    return jsonify(orch.get_document_list())
 
-@app.post("/api/initialize")
-def initialize():
+@app.route("/api/initialize", methods=["POST"])
+def initialize_api():
     payload = request.get_json(silent=True) or {}
-    groq_api_key = (payload.get("groq_api_key") or "").strip()
-    if groq_api_key.lower() in {"your_groq_api_key_here", "your_api_key_here", "changeme"}:
-        groq_api_key = ""
+    api_key = payload.get("groq_api_key")
+    
+    try:
+        STATE["orchestrator"] = HybridLLMOrchestrator(groq_api_key=api_key)
+        return jsonify({"success": True, "message": "System re-initialized."})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
-    STATE["groq_api_key"] = groq_api_key
-    STATE["orchestrator"] = HybridLLMOrchestrator(groq_api_key=(groq_api_key or None))
-    STATE["documents_loaded"] = False
-    STATE["loaded_files"] = []
-
-    return jsonify(
-        {
-            "success": True,
-            "message": "System initialized successfully.",
-            "initialized": True,
-            "documents_loaded": False,
-        }
-    )
-
-
-@app.post("/api/load-documents")
-def load_documents():
-    ok, response, status = require_orchestrator()
-    if not ok:
-        return response, status
-
+@app.route("/api/load-documents", methods=["POST"])
+def load_documents_api():
+    orch = STATE["orchestrator"]
+    if not orch:
+        return jsonify({"success": False, "error": "Orchestrator not initialized."}), 400
+        
+    if "documents" not in request.files:
+        return jsonify({"success": False, "error": "No files uploaded."}), 400
+    
     files = request.files.getlist("documents")
-    if not files:
-        return jsonify({"success": False, "error": "Upload documents first."}), 400
-
-    saved_paths = save_uploaded_files(files)
+    saved_paths = []
+    
+    DOCUMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    for file in files:
+        if file and file.filename and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            path = str(DOCUMENTS_DIR / filename)
+            file.save(path)
+            saved_paths.append(path)
+    
     if not saved_paths:
-        return jsonify({"success": False, "error": "No valid files were uploaded."}), 400
+        return jsonify({"success": False, "error": "No valid documents found."}), 400
 
-    try:
-        STATE["orchestrator"].load_documents(saved_paths)
-        STATE["documents_loaded"] = True
-        STATE["loaded_files"] = [Path(path).name for path in saved_paths]
-        return jsonify(
-            {
-                "success": True,
-                "message": f"{len(saved_paths)} document(s) loaded into the secure workspace.",
-                "documents_loaded": True,
-                "loaded_files": STATE["loaded_files"],
-            }
-        )
-    except Exception as exc:
-        return jsonify({"success": False, "error": f"Document loading failed: {exc}"}), 500
+    success = orch.load_documents(saved_paths)
+    if success:
+        return jsonify({
+            "success": True, 
+            "message": f"Loaded {len(saved_paths)} documents.",
+            "loaded_files": orch.get_document_list()
+        })
+    else:
+        return jsonify({"success": False, "error": "Failed to process documents."}), 500
 
+@app.route("/api/query", methods=["POST"])
+def query_api():
+    orch = STATE["orchestrator"]
+    if not orch:
+         return jsonify({"success": False, "error": "Orchestrator not initialized."}), 400
 
-@app.post("/api/query")
-def run_query():
-    ok, response, status = require_orchestrator()
-    if not ok:
-        return response, status
+    data = request.json or {}
+    query_text = data.get("query")
+    mode = data.get("mode", "hybrid")
+    expert_mode = data.get("expert_mode", False)
+    selected_document = data.get("selected_document")
+    
+    if selected_document == "all":
+        selected_document = None
 
-    payload = request.get_json(silent=True) or {}
-    query = (payload.get("query") or "").strip()
-    mode = payload.get("mode") or "hybrid"
-
-    if not query:
-        return jsonify({"success": False, "error": "Enter a question before running the analysis."}), 400
-
-    try:
-        if mode == "local_only":
-            result = STATE["orchestrator"].process_query_local_only(query)
-        else:
-            result = STATE["orchestrator"].process_query_hybrid(query)
-    except Exception as exc:
-        return jsonify({"success": False, "error": f"Query execution failed: {exc}"}), 500
-
+    if not query_text:
+        return jsonify({"success": False, "error": "No query provided."}), 400
+    
+    if mode == "hybrid":
+        result = orch.process_query_hybrid(query_text, expert_mode=expert_mode, selected_document=selected_document)
+    else:
+        result = orch.process_query_local_only(query_text, selected_document=selected_document)
+    
     return jsonify(result)
 
+@app.route("/api/compare", methods=["POST"])
+def compare_api():
+    orch = STATE["orchestrator"]
+    if not orch:
+         return jsonify({"success": False, "error": "Orchestrator not initialized."}), 400
 
-@app.post("/api/compare")
-def compare():
-    ok, response, status = require_orchestrator()
-    if not ok:
-        return response, status
+    data = request.json or {}
+    query_text = data.get("query")
+    expert_mode = data.get("expert_mode", False)
+    selected_document = data.get("selected_document")
 
-    if not STATE["documents_loaded"]:
-        return jsonify({"success": False, "error": "Load documents before generating a comparison report."}), 400
+    if selected_document == "all":
+        selected_document = None
 
-    payload = request.get_json(silent=True) or {}
-    query = (payload.get("query") or "").strip()
+    if not query_text:
+        return jsonify({"success": False, "error": "No query provided."}), 400
+    
+    judge = LLMJudge()
+    results = orch.compare_approaches(query_text, expert_mode=expert_mode, selected_document=selected_document)
+    
+    # Check if any modes failed
+    if not results.get("hybrid", {}).get("success") or not results.get("local_only", {}).get("success"):
+        error_msg = results.get("hybrid", {}).get("error") or results.get("local_only", {}).get("error") or "Analysis failed."
+        return jsonify({"success": False, "error": error_msg}), 400
 
-    if not query:
-        return jsonify({"success": False, "error": "Enter a benchmarking question first."}), 400
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        local_answer = results["local_only"].get("answer", "")
+        hybrid_answer = results["hybrid"].get("answer", "")
+        local_context = results["local_only"].get("retrieved_context", [])
+        hybrid_context = results["hybrid"].get("retrieved_context", [])
+        
+        # For individual evaluations, we use their respective context
+        local_eval_future = executor.submit(judge.evaluate_answer, query_text, local_answer, local_context)
+        hybrid_eval_future = executor.submit(judge.evaluate_answer, query_text, hybrid_answer, hybrid_context)
+        
+        # For comparison, we use a combined context to see who retrieved better/more relevant info
+        combined_context = local_context + [c for c in hybrid_context if c not in local_context]
+        comparison_future = executor.submit(judge.compare_answers, query_text, local_answer, hybrid_answer, combined_context)
+        
+        judge_payload = {
+            "provider": "ollama",
+            "model": judge.judge_model,
+            "local_only": local_eval_future.result(),
+            "hybrid": hybrid_eval_future.result(),
+            "comparison": comparison_future.result(),
+        }
 
-    try:
-        results = STATE["orchestrator"].compare_approaches(query)
-    except Exception as exc:
-        return jsonify({"success": False, "error": f"Comparison failed: {exc}"}), 500
+    # Reconcile scores
+    criteria = ["accuracy", "completeness", "relevance", "coherence", "groundedness"]
 
-    hybrid_score = (
-        results["hybrid"].get("privacy_score", 0) * 0.6
-        + results["hybrid"].get("completeness_score", 0) * 0.4
-    )
-    local_score = (
-        results["local_only"].get("privacy_score", 0) * 0.8
-        + results["local_only"].get("completeness_score", 0) * 0.2
-    )
+    def avg_score(evaluation: dict) -> float:
+        scores = []
+        for criterion in criteria:
+            item = evaluation.get(criterion, {})
+            try:
+                scores.append(float(item.get("score", 0)))
+            except (TypeError, ValueError):
+                scores.append(0.0)
+        return sum(scores) / max(len(scores), 1)
 
-    recommendation = "Hybrid Strategy" if hybrid_score > local_score else "Local-Only Strategy"
+    local_avg = round(avg_score(judge_payload["local_only"]), 2)
+    hybrid_avg = round(avg_score(judge_payload["hybrid"]), 2)
 
-    # LLM-as-a-judge (Gemini only). Groq must remain only for hybrid planning/cloud.
-    try:
-        if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
-            raise RuntimeError("Gemini judge is not configured. Set GEMINI_API_KEY (or GOOGLE_API_KEY).")
+    comp = judge_payload.get("comparison")
+    if not isinstance(comp, dict):
+        comp = {}
+        judge_payload["comparison"] = comp
 
-        reference_docs = STATE["orchestrator"].vector_store.search(query, top_k=3)
-        judge = LLMJudge(allow_groq_fallback=False)
-        local_answer = results.get("local_only", {}).get("answer", "")
-        hybrid_answer = results.get("hybrid", {}).get("answer", "")
+    comp["answer_a_score"] = local_avg
+    comp["answer_b_score"] = hybrid_avg
 
-        # Parallelize judging tasks
-        from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            local_eval_future = executor.submit(judge.evaluate_answer, query, local_answer, reference_docs)
-            hybrid_eval_future = executor.submit(judge.evaluate_answer, query, hybrid_answer, reference_docs)
-            comparison_future = executor.submit(judge.compare_answers, query, local_answer, hybrid_answer, reference_docs)
-            
-            judge_payload = {
-                "provider": judge.judge_provider,
-                "model": judge.judge_model,
-                "local_only": local_eval_future.result(),
-                "hybrid": hybrid_eval_future.result(),
-                "comparison": comparison_future.result(),
-            }
+    # --- Deterministic quality score (objective, unaffected by Mistral lenience) ---
+    import re as _re
 
-        # Reconcile any inconsistency between per-criterion scores and the comparison winner/scores.
-        # We want the dashboard to be internally consistent and not claim a "strong" win when
-        # criterion scores indicate a tie.
-        criteria = ["accuracy", "completeness", "relevance", "coherence", "groundedness"]
+    def quality_score(text: str) -> float:
+        """Blend of depth, vocabulary richness, and non-repetition."""
+        if not text:
+            return 0.0
+        words = text.lower().split()
+        word_count = len(words)
+        # Depth: normalize word count (cap benefit at 600 words)
+        depth = min(word_count / 600, 1.0)
+        # Vocabulary diversity: unique words / total words
+        vocab = len(set(words)) / max(word_count, 1)
+        # Non-repetition: deduped sentences / all sentences
+        sents = [s.strip() for s in _re.split(r'[.!?]', text) if s.strip()]
+        dedup_ratio = len(set(sents)) / max(len(sents), 1)
+        return round(0.5 * depth + 0.3 * vocab + 0.2 * dedup_ratio, 3)
 
-        def avg_score(evaluation: dict) -> float:
-            scores = []
-            for criterion in criteria:
-                item = evaluation.get(criterion, {})
-                try:
-                    scores.append(float(item.get("score", 0)))
-                except (TypeError, ValueError):
-                    scores.append(0.0)
-            return sum(scores) / max(len(scores), 1)
+    local_q = quality_score(local_answer)
+    hybrid_q = quality_score(hybrid_answer)
+    comp["answer_a_quality"] = local_q
+    comp["answer_b_quality"] = hybrid_q
 
-        local_avg = round(avg_score(judge_payload["local_only"]), 2)
-        hybrid_avg = round(avg_score(judge_payload["hybrid"]), 2)
+    # Primary: trust Mistral's clear side-by-side verdict (A or B)
+    mistral_winner = str(comp.get("winner", "Tie")).strip()
+    mistral_strength = str(comp.get("preference_strength", "Weak")).strip()
 
-        comp = judge_payload.get("comparison") or {}
-        comp["answer_a_score"] = local_avg
-        comp["answer_b_score"] = hybrid_avg
-
-        tolerance = 0.3
-        if abs(hybrid_avg - local_avg) <= tolerance:
+    if mistral_winner in ("A", "B"):
+        computed_winner = mistral_winner
+        strength = mistral_strength if mistral_strength in ("Weak", "Moderate", "Strong") else "Moderate"
+    else:
+        # Mistral uncertain — use deterministic quality score
+        q_diff = hybrid_q - local_q
+        if q_diff > 0.08:
+            computed_winner = "B"   # Hybrid clearly better
+            strength = "Strong" if q_diff > 0.2 else "Moderate"
+        elif q_diff < -0.08:
+            computed_winner = "A"   # Local clearly better
+            strength = "Strong" if q_diff < -0.2 else "Moderate"
+        else:
             computed_winner = "Tie"
             strength = "Weak"
-        elif hybrid_avg > local_avg:
-            computed_winner = "B"
-            strength = "Moderate" if (hybrid_avg - local_avg) < 1.0 else "Strong"
-        else:
-            computed_winner = "A"
-            strength = "Moderate" if (local_avg - hybrid_avg) < 1.0 else "Strong"
 
-        original_winner = comp.get("winner")
-        comp["winner"] = computed_winner
-        comp["preference_strength"] = strength
+    comp["winner"] = computed_winner
+    comp["preference_strength"] = strength
+    judge_payload["comparison"] = comp
 
-        if original_winner and original_winner != computed_winner:
-            diffs = comp.get("key_differences")
-            if not isinstance(diffs, list):
-                diffs = []
-            diffs.insert(
-                0,
-                "The direct-comparison verdict disagreed with the criterion scores; the dashboard uses the criterion-average for consistency.",
-            )
-            comp["key_differences"] = diffs
+    return jsonify({
+        "success": True,
+        "results": results,
+        "judge": judge_payload
+    })
 
-        judge_payload["comparison"] = comp
-    except Exception as exc:
-        judge_payload = {
-            "provider": "unavailable",
-            "model": None,
-            "error": str(exc),
-        }
+# --- Auto-Initialization Logic ---
+def auto_initialize():
+    apiKey = os.getenv("GROQ_API_KEY")
+    if apiKey:
+        print(f"Auto-initializing orchestrator with GROQ_API_KEY from environment...")
+        try:
+            STATE["orchestrator"] = HybridLLMOrchestrator(groq_api_key=apiKey)
+            print("Auto-initialization successful.")
+        except Exception as e:
+            print(f"Auto-initialization failed: {e}")
+    else:
+        print("GROQ_API_KEY not found in .env. System waiting for manual key.")
 
-    return jsonify(
-        {
-            "success": True,
-            "results": results,
-            "recommendation": recommendation,
-            "judge": judge_payload,
-        }
-    )
-
+auto_initialize()
 
 if __name__ == "__main__":
-    app.run(debug=False, host="0.0.0.0", port=8501)
+    app.run(host="0.0.0.0", port=8501, debug=True)

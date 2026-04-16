@@ -1,0 +1,11 @@
+Don't keep sidebar as different section, integerate it with the page only
+Remove initialize system option, it must initialize on starting the app (also i've put the api key in .env so don't ask it in UI)
+remove this text "Protected Orchestration Console"
+In model just show the exact local model being used, no need of /llama..
+Remove this text "Operational Views", "Benchmark execution strategies side by side"
+Remove Medical Contraction analysis and Legal compliance check
+Add border to textfield and dropdown menu
+Make the size of all dropdown menus dynamic (as per the text) not fixed, right now it's stretching too much (taking whole width)
+Add some space between these two boxes: Generate comparitive report and Comparison report generated successfully
+In privacy validation box show the input query and the exact query we send to the cloud (we don't send the input query as it is, so show what we exactly send it or ask it to do)
+In response comparison, still there's blank space left after remvoing cloud node, hybrid and local node must divide the whole space equally

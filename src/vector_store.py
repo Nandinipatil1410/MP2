@@ -60,24 +60,66 @@ class VectorStore:
         
         print(f" Added {len(new_documents)} documents. Total: {len(self.documents)}")
     
-    def search(self, query: str, top_k: int = 3) -> List[Dict[str, any]]:
-        """Search for most similar documents"""
+    def search(self, query: str, top_k: int = 3, source: str = None) -> List[Dict[str, any]]:
+        """
+        Search for most similar documents
+        Args:
+            query: The search string
+            top_k: Number of results
+            source: Optional filename to filter search to a specific document
+        """
         if self.index is None or len(self.documents) == 0:
             return []
         
         # Create query embedding
         query_embedding = self.create_embeddings([query])
         
-        # Search
-        distances, indices = self.index.search(query_embedding, min(top_k, len(self.documents)))
+        # Scenario 1: Targeted Search (Filtering by Source)
+        if source:
+            valid_indices = [i for i, doc in enumerate(self.documents) if doc.get('source') == source]
+            if not valid_indices:
+                return []
+            
+            # For small/medium indices, we can reconstruct and perform a targeted search
+            # This ensures we get the best results within that specific document
+            try:
+                sub_embeddings = np.array([self.index.reconstruct(i) for i in valid_indices]).astype('float32')
+                sub_index = faiss.IndexFlatL2(self.dimension)
+                sub_index.add(sub_embeddings)
+                
+                distances, indices = sub_index.search(query_embedding, min(top_k, len(valid_indices)))
+                
+                results = []
+                for dist, idx in zip(distances[0], indices[0]):
+                    if idx != -1: # FAISS returns -1 if not enough results
+                        orig_idx = valid_indices[idx]
+                        result = self.documents[orig_idx].copy()
+                        result['score'] = float(dist)
+                        results.append(result)
+                return results
+            except Exception as e:
+                print(f" Error in targeted search: {e}. Falling back to filtered global search.")
+                # Fallback: search more and filter
+                distances, indices = self.index.search(query_embedding, min(top_k * 5, len(self.documents)))
+        else:
+            # Scenario 2: Global Search
+            distances, indices = self.index.search(query_embedding, min(top_k, len(self.documents)))
         
-        # Prepare results
+        # Prepare results for either global or fallback filtered search
         results = []
         for dist, idx in zip(distances[0], indices[0]):
-            if idx < len(self.documents):
-                result = self.documents[idx].copy()
+            if idx != -1 and idx < len(self.documents):
+                doc = self.documents[idx]
+                # Filter if source was specified but we hit the fallback path
+                if source and doc.get('source') != source:
+                    continue
+                    
+                result = doc.copy()
                 result['score'] = float(dist)
                 results.append(result)
+                
+                if len(results) >= top_k:
+                    break
         
         return results
     

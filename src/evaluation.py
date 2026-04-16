@@ -57,15 +57,34 @@ class EvaluationMetrics:
         return max(0.0, float(np.exp(-(latency - baseline) / baseline)))
 
     def calculate_accuracy_heuristic(self, answer: str, query: str) -> float:
-        """Simple heuristic for answer quality when no judge model is available."""
-        length_score = min(1.0, len(answer.split()) / 50.0) if answer else 0.0
+        """Heuristic for answer quality that penalizes repetition and rewards relevance."""
+        if not answer:
+            return 0.0
 
+        # 1. Length Score (up to 100 words, but not too short)
+        words = answer.split()
+        length_score = min(1.0, len(words) / 100.0)
+
+        # 2. Relevance Score (word overlap with query)
         query_words = set(query.lower().split())
-        answer_words = set(answer.lower().split())
-        overlap = len(query_words & answer_words)
+        answer_words_set = set(answer.lower().split())
+        overlap = len(query_words & answer_words_set)
         relevance_score = min(1.0, overlap / max(len(query_words), 1))
 
-        return (length_score + relevance_score) / 2.0
+        # 3. Repetition Penalty (detect duplicate paragraphs or heavy word-set vs list mismatch)
+        paragraphs = [p.strip() for p in answer.split("\n\n") if p.strip()]
+        unique_paragraphs = set(paragraphs)
+        repetition_multiplier = 1.0
+        if len(paragraphs) > 1:
+            repetition_multiplier = len(unique_paragraphs) / len(paragraphs)
+        
+        # Also check word variety
+        word_variety = len(answer_words_set) / max(len(words), 1)
+        if word_variety < 0.4: # Very low variety usually means loops
+            repetition_multiplier *= (word_variety / 0.4)
+
+        score = (length_score * 0.3 + relevance_score * 0.7) * repetition_multiplier
+        return min(1.0, score)
 
     def compare_approaches(self, results: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
         """Compare approaches using lightweight heuristics."""
@@ -116,56 +135,18 @@ class EvaluationMetrics:
 
 
 class LLMJudge:
-    """
-    LLM-as-a-judge evaluator for comparing local vs hybrid answers.
-    Uses Groq when an API key is available and falls back to heuristics otherwise.
-    """
+    """Judge LLM that evaluates answers and compares approaches using local models."""
 
-    def __init__(
-        self,
-        api_key: str | None = None,
-        judge_model: str | None = None,
-        allow_groq_fallback: bool = False,
-    ):
-        # Prefer an independent judge provider when possible:
-        # 1) Gemini (if GEMINI_API_KEY/GOOGLE_API_KEY is set)
-        # 2) Groq (optional fallback if allow_groq_fallback is True)
-        # 3) Fallback heuristic judge
-        self.gemini_api_key = (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or "").strip()
-        self.groq_api_key = (api_key or os.getenv("GROQ_API_KEY") or "").strip()
-        if self.gemini_api_key.lower() in {"your_gemini_api_key_here", "your_api_key_here", "changeme"}:
-            self.gemini_api_key = ""
-        if self.groq_api_key.lower() in {"your_groq_api_key_here", "your_api_key_here", "changeme"}:
-            self.groq_api_key = api_key or os.getenv("GROQ_API_KEY") or ""
-        self.allow_groq_fallback = allow_groq_fallback
-        self.ollama_url = "http://localhost:11434"
-        
-        # Static flag to remember if Gemini is failing across instances
-        if not hasattr(LLMJudge, "_gemini_available"):
-            LLMJudge._gemini_available = True
-        
-        # Determine best available judge provider
-        if self.gemini_api_key and LLMJudge._gemini_available:
-            self.judge_provider = "gemini"
-        elif allow_groq_fallback and Groq and self.groq_api_key:
-            self.judge_provider = "groq"
-        elif self._check_ollama():
-            self.judge_provider = "ollama"
-        else:
-            self.judge_provider = "heuristic"
-            
-        if judge_model:
-            self.judge_model = judge_model.strip()
-        elif self.judge_provider == "gemini":
-            # Model names can change over time; "gemini-flash-latest" is a safer default.
-            self.judge_model = (os.getenv("GEMINI_JUDGE_MODEL") or "gemini-flash-latest").strip()
-        elif self.judge_provider == "ollama":
-            self.judge_model = "qwen2:0.5b"
-        else:
-            self.judge_model = "llama-3.3-70b-versatile"
-
-        self.client = Groq(api_key=self.groq_api_key) if (self.judge_provider == "groq" and Groq) else None
+    def __init__(self, judge_model: str = None):
+        """
+        Initialize the judge with local Ollama.
+        Defaults to OLLAMA_JUDGE_MODEL from .env or 'mistral:latest'.
+        """
+        self.ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434").strip()
+        self.judge_model = (judge_model or os.getenv("OLLAMA_JUDGE_MODEL") or "mistral:latest").strip()
         self.metrics = EvaluationMetrics()
+        
+        print(f"  Judging via Local Ollama ({self.judge_model})")
 
     def _check_ollama(self) -> bool:
         """Check if local Ollama is available."""
@@ -179,46 +160,60 @@ class LLMJudge:
         """Evaluate one answer on multiple criteria."""
         reference_text = self._format_reference_docs(reference_docs)
 
-        if self.judge_provider == "heuristic":
-            return self._fallback_answer_evaluation(question, answer, reference_text)
+        # No fallback logic needed; if Ollama is down, it should raise an error for the user to fix
 
-        prompt = f"""You are a highly critical, expert senior evaluator for precision document-grounded QA systems.
-Your goal is to provide a rigorous, objective assessment that distinguishes between "good" and "flawless" answers.
+        has_context = bool(reference_text.strip())
+        context_block = reference_text if has_context else "[No specific reference documents — evaluate on internal quality]"
+        groundedness_rule = (
+            "GROUNDEDNESS: Score how well claims are supported by the reference documents above."
+            if has_context else
+            "GROUNDEDNESS: No reference documents were provided. Score based on internal consistency and factual plausibility."
+        )
 
-Question:
+        prompt = f"""### LLM JUDGE — ANSWER EVALUATION
+
+You are a CALIBRATED EVALUATOR. You MUST use the full scoring range — do NOT give 1.0 to a brief or generic answer.
+
+### SCORING RUBRIC (apply to ALL criteria):
+- 0.0–0.3: Very poor — missing, wrong, or completely off-topic
+- 0.4–0.6: Basic — answers superficially or in 1-2 sentences with minimal detail
+- 0.7–0.8: Good — reasonably complete, specific, and accurate
+- 0.9–1.0: Exceptional — very thorough, detailed, well-cited, covers multiple aspects
+
+### SCORING CRITERIA:
+1. ACCURACY: Are the specific facts, entities, and claims correct?
+2. COMPLETENESS: Does the answer cover ALL key aspects, or only a superficial overview? (A 2-sentence answer should score MAX 0.6)
+3. RELEVANCE: Is the answer directly addressing the specific question asked?
+4. COHERENCE: Is the answer well-structured, specific, and non-repetitive?
+5. {groundedness_rule}
+
+### CRITICAL RULE: A short/brief answer that covers the topic only at a surface level must score 0.4-0.6 on COMPLETENESS and COHERENCE, not 0.9 or 1.0. Reserve 0.9+ for answers that are detailed and thorough.
+
+### PENALTIES (set score to 0.0 for that criterion only):
+- Deduct severely for obvious hallucinations
+- Deduct for heavy repetition (same paragraph repeated 2+ times)
+
+### REFERENCE DOCUMENTS:
+{context_block}
+
+### QUESTION:
 {question}
 
-Answer to Evaluate:
+### CANDIDATE ANSWER:
 {answer}
 
-Reference Documents:
-{reference_text}
-
-SCORING RUBRIC (1-10):
-- 10: FLAWLESS. Perfect accuracy, covers all nuances, strictly grounded, zero fluff.
-- 8-9: EXCELLENT. Minor details missing but highly accurate and professional.
-- 6-7: GOOD. Correct answer but missing several nuances or slightly disorganized.
-- 4-5: MARGINAL. Technically correct but incomplete, poorly grounded, or overly brief.
-- 1-3: FAILED. Significant inaccuracies, not grounded in docs, or irrelevant.
-
-CRITICISM POLICY:
-- If any detail from the Reference Documents is missing but relevant to the question, you MUST deduct points from 'completeness'.
-- If the answer includes any information not explicitly supported by the docs, you MUST deduct points from 'groundedness'.
-- DO NOT give 10/10 unless the answer is perfect in every single way. Be conservative with 9s and 10s.
-
-Return valid JSON:
+### RESPONSE (JSON ONLY, no other text):
 {{
-  "accuracy": {{"score": 0, "reasoning": ""}},
-  "completeness": {{"score": 0, "reasoning": ""}},
-  "relevance": {{"score": 0, "reasoning": ""}},
-  "coherence": {{"score": 0, "reasoning": ""}},
-  "groundedness": {{"score": 0, "reasoning": ""}},
-  "overall_score": 0,
-  "summary": ""
-}}
-"""
+  "accuracy": {{ "score": <0.0-1.0>, "reasoning": "<brief>" }},
+  "completeness": {{ "score": <0.0-1.0>, "reasoning": "<brief>" }},
+  "relevance": {{ "score": <0.0-1.0>, "reasoning": "<brief>" }},
+  "coherence": {{ "score": <0.0-1.0>, "reasoning": "<brief>" }},
+  "groundedness": {{ "score": <0.0-1.0>, "reasoning": "<brief>" }},
+  "overall_score": <0.0-1.0>,
+  "summary": "<one sentence verdict>"
+}}"""
         response_text = self.call_judge_llm(prompt)
-        parsed = self._parse_json_response(response_text, default=self._fallback_answer_evaluation(question, answer, reference_text))
+        parsed = self._parse_json_response(response_text, default={})
         return self._normalize_answer_evaluation(parsed)
 
     def compare_answers(
@@ -231,45 +226,43 @@ Return valid JSON:
         """Directly compare local-only vs hybrid answers."""
         reference_text = self._format_reference_docs(reference_docs)
 
-        if self.judge_provider == "heuristic":
-            return self._fallback_answer_comparison(question, answer_local, answer_hybrid, reference_text)
+        # No fallback in local-only mode
 
-        prompt = f"""You are a critical, expert senior evaluator comparing two AI-generated answers grounded in reference documents.
+        prompt = f"""### LLM JUDGE — COMPARISON EVALUATION
 
-Your task is to identify the superior answer and ensure the scores strictly reflect the qualitative differences you observe.
+You are comparing two AI-generated answers to determine which is BETTER. Both answers are responses to the same user task/question.
 
-Question:
+> IMPORTANT: The QUESTION below is always a user's task or query, even if it seems short or directive (e.g. "Generate Expert Review" or "Summarize"). Your job is to compare which answer fulfills that task better.
+
+### TASK/QUESTION asked by the user:
 {question}
 
-Answer A (Local-Only):
+### CANDIDATE A (Local-Only Model):
 {answer_local}
 
-Answer B (Hybrid):
+### CANDIDATE B (Hybrid Model):
 {answer_hybrid}
 
-Reference Documents:
-{reference_text}
+### REFERENCE DOCUMENTS (for context):
+{reference_text if reference_text.strip() else "[No specific documents — compare on general quality]"}
 
-COMPARISON RULES:
-1. DIFFERENTIATION: If one answer is "more detailed", "better reasoned", or "more grounded", its scores MUST be significantly higher than the other's. DO NOT give identical scores for different quality levels.
-2. NO EASY 10s: Reserve 10 for absolute perfection. If an answer missed even one nuance, it is an 8 or 9.
-3. PREFERENCE: Choose a clear winner (A or B) unless they are verbatim identical or genuinely provide the exact same utility.
+### EVALUATION CRITERIA (in order of importance):
+1. **Depth & Technical Detail** — Which answer provides more substantive, specific information?
+2. **Structure & Clarity** — Which is better organized and easier to read?
+3. **Completeness** — Which covers more aspects of the task?
+4. **Non-repetition** — Penalize answers that repeat the same sentences or paragraphs.
 
-Return valid JSON:
+### OUTPUT (JSON ONLY):
 {{
-  "winner": "A",
-  "answer_a_score": 0,
-  "answer_b_score": 0,
-  "key_differences": ["", ""],
-  "reasoning": "Explain exactly why the winner is superior. If one answer is more 10/10 while the other is 8/10, justify the gap specifically.",
-  "preference_strength": "Weak/Moderate/Strong"
-}}
-"""
+  "winner": "<A or B or Tie — ONLY 'Tie' if genuinely equivalent>",
+  "answer_a_score": <0.0-1.0>,
+  "answer_b_score": <0.0-1.0>,
+  "key_differences": ["<specific difference 1>", "<specific difference 2>"],
+  "reasoning": "<which answer is better and why, referencing specific content>",
+  "preference_strength": "<Weak|Moderate|Strong>"
+}}"""
         response_text = self.call_judge_llm(prompt)
-        parsed = self._parse_json_response(
-            response_text,
-            default=self._fallback_answer_comparison(question, answer_local, answer_hybrid, reference_text),
-        )
+        parsed = self._parse_json_response(response_text, default={})
         return self._normalize_comparison(parsed)
 
     def evaluate_systems(self, orchestrator, question: str, top_k: int = 3) -> Dict[str, Any]:
@@ -328,145 +321,8 @@ Return valid JSON:
         }
 
     def call_judge_llm(self, prompt: str) -> str:
-        """Call the judge LLM and return raw text."""
-        if self.judge_provider == "gemini":
-            try:
-                return self._call_gemini(prompt)
-            except Exception as e:
-                print(f" Gemini Judge failed: {e}")
-                # Mark Gemini as unavailable so we don't try it again in this session
-                LLMJudge._gemini_available = False
-                
-                print(" Falling back to heuristic judge for stability...")
-                self.judge_provider = "heuristic"
-                return self._call_heuristic(prompt)
-                    # Return special marker for fallback handling if needed
-                    raise e
-
-        if self.judge_provider == "ollama":
-            return self._call_ollama(prompt)
-
-        if self.judge_provider != "groq" or not self.client:
-            raise RuntimeError("Judge client is not configured.")
-
-        # Prefer requesting structured JSON if supported by the SDK/model,
-        # but keep parsing robust if it's not.
-        try:
-            response = self.client.chat.completions.create(
-                model=self.judge_model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a strict evaluator. Return only valid JSON with no markdown fencing.",
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    },
-                ],
-                temperature=0.1,
-                max_tokens=1400,
-                response_format={"type": "json_object"},
-            )
-        except TypeError:
-            response = self.client.chat.completions.create(
-                model=self.judge_model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a strict evaluator. Return only valid JSON with no markdown fencing.",
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    },
-                ],
-                temperature=0.1,
-                max_tokens=1400,
-            )
-        return response.choices[0].message.content
-
-    def _call_gemini(self, prompt: str) -> str:
-        """
-        Call Gemini via REST (Google AI Studio / Generative Language API).
-        Requires GEMINI_API_KEY or GOOGLE_API_KEY.
-        """
-        if not self.gemini_api_key:
-            raise RuntimeError("Gemini judge is not configured.")
-
-        model = self.judge_model.strip()
-        # Accept either "gemini-flash-latest" or "models/gemini-flash-latest"
-        if model.startswith("models/"):
-            model = model[len("models/") :]
-
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-        params = {"key": self.gemini_api_key}
-        payload = {
-            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": 0.1,
-                "maxOutputTokens": 1400,
-            },
-        }
-
-        max_attempts = int(os.getenv("GEMINI_JUDGE_RETRIES", "3"))
-        timeout_s = int(os.getenv("GEMINI_JUDGE_TIMEOUT", "60"))
-
-        last_error: Exception | None = None
-        for attempt in range(max_attempts):
-            try:
-                response = requests.post(url, params=params, json=payload, timeout=timeout_s)
-                if response.status_code >= 400:
-                    # Common failure mode: model renamed / not supported for generateContent -> 404
-                    if response.status_code == 404 and model != "gemini-flash-latest":
-                        self.judge_model = "gemini-flash-latest"
-                        return self._call_gemini(prompt)
-
-                    # Retry on transient errors.
-                    if response.status_code in {408, 409, 425, 429, 500, 502, 503, 504} and attempt < max_attempts - 1:
-                        backoff = (0.8 * (2 ** attempt)) + random.uniform(0, 0.35)
-                        time.sleep(backoff)
-                        continue
-
-                    if response.status_code == 404:
-                        available = self._list_gemini_models(max_models=20)
-                        hint = ""
-                        if available:
-                            hint = " Available models (subset): " + ", ".join(available)
-                        raise RuntimeError(
-                            f"Gemini model '{model}' was not found or not supported for generateContent.{hint}"
-                        )
-
-                    raise RuntimeError(
-                        f"Gemini judge request failed (HTTP {response.status_code}). Response: {response.text[:400]}"
-                    )
-
-                data = response.json()
-                break
-            except (requests.Timeout, requests.ConnectionError) as exc:
-                last_error = exc
-                if attempt < max_attempts - 1:
-                    backoff = (0.8 * (2 ** attempt)) + random.uniform(0, 0.35)
-                    time.sleep(backoff)
-                    continue
-                raise RuntimeError("Gemini judge request failed due to a network timeout/connection error.") from exc
-            except Exception as exc:
-                last_error = exc
-                break
-        else:
-            raise RuntimeError("Gemini judge request failed after retries.")
-
-        if last_error and "data" not in locals():
-            raise RuntimeError("Gemini judge request failed.") from last_error
-
-        candidates = data.get("candidates") or []
-        if not candidates:
-            raise RuntimeError("Gemini judge returned no candidates.")
-
-        content = (candidates[0].get("content") or {})
-        parts = content.get("parts") or []
-        text_parts = [part.get("text", "") for part in parts if isinstance(part, dict)]
-        return "\n".join([part for part in text_parts if part]).strip()
+        """Call the local Ollama judge and return raw text."""
+        return self._call_ollama(prompt)
 
     def _call_ollama(self, prompt: str) -> str:
         """Call local Ollama API for evaluation."""
@@ -478,42 +334,15 @@ Return valid JSON:
                 "stream": False,
                 "options": {
                     "temperature": 0.1,
-                    "num_predict": 300  # Reduced for speed
+                    "num_predict": 1400  # Increased for more detailed reasoning
                 }
             }
-            response = requests.post(url, json=payload, timeout=60)
+            response = requests.post(url, json=payload, timeout=90)
             response.raise_for_status()
             return response.json().get('response', '').strip()
         except Exception as e:
             print(f"Error calling Ollama judge: {e}")
             raise RuntimeError(f"Ollama judge failed: {e}")
-
-    def _list_gemini_models(self, max_models: int = 50) -> List[str]:
-        """List available Gemini models for the provided API key (best-effort)."""
-        if not self.gemini_api_key:
-            return []
-        try:
-            response = requests.get(
-                "https://generativelanguage.googleapis.com/v1beta/models",
-                params={"key": self.gemini_api_key, "pageSize": max_models},
-                timeout=30,
-            )
-            response.raise_for_status()
-            data = response.json()
-            models = data.get("models") or []
-            names: List[str] = []
-            for item in models:
-                name = item.get("name")
-                if not name:
-                    continue
-                # Prefer models that can generate content.
-                methods = item.get("supportedGenerationMethods") or []
-                if "generateContent" in methods:
-                    # Strip "models/" prefix for display consistency.
-                    names.append(name.replace("models/", ""))
-            return names[:max_models]
-        except Exception:
-            return []
 
     def _format_reference_docs(self, reference_docs: str | List[Dict[str, Any]] | List[str]) -> str:
         """Normalize reference docs into judge-friendly text."""
@@ -534,90 +363,58 @@ Return valid JSON:
     def _parse_json_response(self, response_text: str, default: Dict[str, Any]) -> Dict[str, Any]:
         """Parse raw JSON or recover JSON embedded in text."""
         try:
-            return json.loads(response_text)
+            parsed = json.loads(response_text)
+            if isinstance(parsed, dict):
+                return parsed
         except (json.JSONDecodeError, TypeError):
             pass
 
         if not response_text:
             return default
 
+        # Try to extract JSON from text if it's not a pure JSON response
         match = re.search(r"\{.*\}", response_text, re.DOTALL)
-        if not match:
-            return default
+        if match:
+            try:
+                parsed = json.loads(match.group(0))
+                if isinstance(parsed, dict):
+                    return parsed
+            except json.JSONDecodeError:
+                pass
 
-        try:
-            return json.loads(match.group(0))
-        except json.JSONDecodeError:
-            return default
-
-    def _fallback_answer_evaluation(self, question: str, answer: str, reference_text: str) -> Dict[str, Any]:
-        """Fallback evaluator when no judge LLM is configured."""
-        base_score = round(self.metrics.calculate_accuracy_heuristic(answer, question) * 10, 2)
-        groundedness = 8.0 if answer and reference_text else 4.0
-
-        return {
-            "accuracy": {"score": base_score, "reasoning": "Heuristic score based on relevance and answer length."},
-            "completeness": {"score": base_score, "reasoning": "Longer, more query-aligned answers score higher heuristically."},
-            "relevance": {"score": base_score, "reasoning": "Keyword overlap suggests how directly the answer addresses the query."},
-            "coherence": {"score": min(10.0, base_score + 0.5), "reasoning": "Fallback assumes readable answers unless empty."},
-            "groundedness": {"score": groundedness, "reasoning": "Groundedness is approximated because no judge LLM is available."},
-            "overall_score": round(mean([base_score, base_score, base_score, min(10.0, base_score + 0.5), groundedness]), 2),
-            "summary": "Fallback heuristic evaluation used because no judge API key was provided.",
-        }
-
-    def _fallback_answer_comparison(
-        self,
-        question: str,
-        answer_local: str,
-        answer_hybrid: str,
-        reference_text: str,
-    ) -> Dict[str, Any]:
-        """Fallback comparison when no judge LLM is available."""
-        local_eval = self._fallback_answer_evaluation(question, answer_local, reference_text)
-        hybrid_eval = self._fallback_answer_evaluation(question, answer_hybrid, reference_text)
-
-        local_score = round(local_eval["overall_score"], 2)
-        hybrid_score = round(hybrid_eval["overall_score"], 2)
-
-        # Higher score must win. Tie only if practically identical.
-        if abs(hybrid_score - local_score) <= 0.2:
-            winner = "Tie"
-            strength = "Weak"
-        elif hybrid_score > local_score:
-            winner = "B"
-            strength = "Moderate" if (hybrid_score - local_score) < 2.0 else "Strong"
-        else:
-            winner = "A"
-            strength = "Moderate" if (local_score - hybrid_score) < 2.0 else "Strong"
-
-        return {
-            "winner": winner,
-            "answer_a_score": local_score,
-            "answer_b_score": hybrid_score,
-            "key_differences": [
-                "Hybrid answers may include more structure when planning helps, but that depends on the query and docs.",
-                "Local-only answers can be equally strong when retrieval captures the right context.",
-            ],
-            "reasoning": "Fallback heuristic comparison used because no judge API key was provided.",
-            "preference_strength": strength,
-        }
+        return default
 
     def _normalize_answer_evaluation(self, parsed: Dict[str, Any]) -> Dict[str, Any]:
         """Ensure answer evaluation fields exist and are well-typed."""
         criteria = ["accuracy", "completeness", "relevance", "coherence", "groundedness"]
         normalized = {}
 
+        if not isinstance(parsed, dict):
+            parsed = {}
+
         for criterion in criteria:
             item = parsed.get(criterion, {})
-            score = float(item.get("score", 0))
+            # Handle both {"score": 10} and raw 10 formats
+            if isinstance(item, (int, float)):
+                score = float(item)
+                reasoning = ""
+            elif isinstance(item, dict):
+                score = float(item.get("score", 0))
+                reasoning = str(item.get("reasoning", ""))
+            else:
+                score = 0.0
+                reasoning = ""
+
             normalized[criterion] = {
                 "score": round(score, 2),
-                "reasoning": str(item.get("reasoning", "")),
+                "reasoning": reasoning,
             }
 
         overall = parsed.get("overall_score")
-        if overall is None:
-            overall = mean(normalized[criterion]["score"] for criterion in criteria)
+        if overall is None or not isinstance(overall, (int, float)):
+            # If no overall score, calculate average of non-zero criterion scores
+            valid_scores = [normalized[c]["score"] for c in criteria if normalized[c]["score"] > 0]
+            overall = mean(valid_scores) if valid_scores else 0.0
 
         normalized["overall_score"] = round(float(overall), 2)
         normalized["summary"] = str(parsed.get("summary", ""))
@@ -625,6 +422,9 @@ Return valid JSON:
 
     def _normalize_comparison(self, parsed: Dict[str, Any]) -> Dict[str, Any]:
         """Ensure comparison fields exist and are well-typed."""
+        if not isinstance(parsed, dict):
+            parsed = {}
+
         winner = str(parsed.get("winner", "Tie"))
         if winner not in {"A", "B", "Tie"}:
             winner = "Tie"

@@ -78,14 +78,44 @@ class QueryAbstractor:
         return abstracted, metadata
     
     def _generalize_query(self, query: str) -> str:
-        """Generalize query to focus on intent"""
-        # Remove specific names (simple heuristic)
-        query = re.sub(r'\b[A-Z][a-z]+ [A-Z][a-z]+\b', '[PERSON]', query)
+        """Generalize query to focus on intent while preserving instructions"""
+        # Whitelist of terms that should NEVER be masked as [PERSON]
+        whitelist = ['Expert', 'Review', 'Generate', 'Analysis', 'Report', 'Summary']
         
-        # Generalize specific numbers
-        query = re.sub(r'\b\d{4,}\b', '[NUMBER]', query)
+        def preserve_whitelist(text):
+            # Temporarily hide whitelisted words
+            preserved = {}
+            for i, word in enumerate(whitelist):
+                marker = f"__PRESERVED_{i}__"
+                if word in text:
+                    preserved[marker] = word
+                    text = text.replace(word, marker)
+            return text, preserved
+
+        def restore_whitelist(text, preserved):
+            for marker, word in preserved.items():
+                text = text.replace(marker, word)
+            return text
+
+        # 1. Temporarily hide whitelisted instructions
+        temp_query, preserved_map = preserve_whitelist(query)
+
+        # 2. Mask obvious names (Two capitalized words, but avoid sentence-initial verbs)
+        # We only mask if it's NOT at the very start of the query (likely a verb) 
+        # OR if it's clearly a name pattern.
+        temp_query = re.sub(r'(?<!^)\b[A-Z][a-z]+ [A-Z][a-z]+\b', '[PERSON]', temp_query)
         
-        return query
+        # 3. Handle sentence-initial if it really looks like a name (e.g. John Doe starts...)
+        # but avoid instructions like "Generate Expert"
+        # We'll stick to a safer exclusion loop for now.
+
+        # 4. Generalize specific numbers
+        temp_query = re.sub(r'\b\d{4,}\b', '[NUMBER]', temp_query)
+        
+        # 5. Restore whitelisted terms
+        final_query = restore_whitelist(temp_query, preserved_map)
+        
+        return final_query
     
     def reconstruct_response(self, response: str) -> str:
         """Reconstruct response by replacing placeholders with original values"""

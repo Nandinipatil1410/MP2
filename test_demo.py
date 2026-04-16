@@ -151,6 +151,8 @@ def test_system():
     
     print("\nResults:")
     for mode, result in results.items():
+        if mode == 'query' or not isinstance(result, dict):
+            continue
         print(f"\n{mode.upper()}:")
         print(f"  Latency: {result['latency']:.2f}s")
         print(f"  Privacy: {result.get('privacy_score', 'N/A')}")
