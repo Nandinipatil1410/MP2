@@ -34,10 +34,8 @@ const elements = {
     judgeScores: document.getElementById("judgeScores"),
     privacyValidation: document.getElementById("privacyValidation"),
     responseColumns: document.getElementById("responseColumns"),
-    expertMode: document.getElementById("expertMode"),
     documentSelect: document.getElementById("documentSelect"),
     compareDocumentSelect: document.getElementById("compareDocumentSelect"),
-    compareExpertMode: document.getElementById("compareExpertMode"),
     copyAnalysisBtn: document.getElementById("copyAnalysisBtn"),
     reasoningTimeline: document.getElementById("reasoningTimeline"),
     reasoningCard: document.getElementById("reasoningCard"),
@@ -61,6 +59,44 @@ function escapeHtml(text) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+function parseMarkdown(text) {
+    if (!text) return "";
+    let html = escapeHtml(text);
+    
+    // Headers
+    html = html.replace(/^### (.*$)/gim, '<h4>$1</h4>');
+    html = html.replace(/^## (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/^# (.*$)/gim, '<h2>$1</h2>');
+    
+    // Bold and Italic
+    html = html.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
+    html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+    
+    // Lists
+    html = html.replace(/^\s*\n\*/gm, '<ul>\n*');
+    html = html.replace(/^(\*|\-) (.*)/gim, '<li>$2</li>');
+    html = html.replace(/<\/li>\n/gim, '</li>');
+    html = html.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>');
+    html = html.replace(/<\/ul>\n<ul>/gim, '\n');
+    
+    // Numbered Lists
+    html = html.replace(/^\s*\n\d\./gm, '<ol>\n1.');
+    html = html.replace(/^\d\.\s+(.*)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/gim, '<ol>$1</ol>');
+    html = html.replace(/<\/ol>\n<ol>/gim, '\n');
+    
+    // Paragraphs and Line breaks
+    html = html.replace(/\n\n/gim, '</p><p>');
+    html = '<p>' + html + '</p>';
+    
+    // Clean up empty paragraphs
+    html = html.replace(/<p><\/p>/g, '');
+    html = html.replace(/<p><(h1|h2|h3|h4|ul|ol)/g, '<$1');
+    html = html.replace(/(<\/h1>|<\/h2>|<\/h3>|<\/h4>|<\/ul>|<\/ol>)<\/p>/g, '$1');
+    
+    return html;
 }
 
 function renderFileList(files) {
@@ -114,7 +150,7 @@ function renderComparison(results) {
             <div class="result-card-header">
                 <h4>${title}</h4>
             </div>
-            <div class="formatted-output">${escapeHtml(content || "")}</div>
+            <div class="formatted-output">${parseMarkdown(content || "")}</div>
         `;
         elements.responseColumns.appendChild(card);
     });
@@ -322,11 +358,12 @@ async function runQuery() {
             body: JSON.stringify({
                 query: elements.queryInput.value,
                 mode: elements.modeSelect.value,
-                expert_mode: elements.expertMode.checked,
+                expert_mode: true,
                 selected_document: elements.documentSelect.value,
+                // intent is auto-classified server-side
             }),
         });
-        elements.answerContent.textContent = result.answer || "";
+        elements.answerContent.innerHTML = parseMarkdown(result.answer || "");
 
         if (elements.reasoningTimeline && result.reasoning_plan) {
             elements.reasoningTimeline.innerHTML = result.reasoning_plan
@@ -355,8 +392,9 @@ async function runComparison() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 query: elements.compareInput.value,
-                expert_mode: (elements.compareExpertMode || elements.expertMode).checked,
+                expert_mode: true,
                 selected_document: elements.compareDocumentSelect.value,
+                // intent is auto-classified server-side
             }),
         });
         const results = payload.results;

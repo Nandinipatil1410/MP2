@@ -23,8 +23,8 @@
                         comparison workflows from a cleaner interface.</p>
                     <div class="hero-badges">
                         <span class="hero-badge">Private documents stay local</span>
-                        <span class="hero-badge">Cloud planning only when needed</span>
-                        <span class="hero-badge">Professional comparison workspace</span>
+                        <span class="hero-badge">Intent-driven routing</span>
+                        <span class="hero-badge">Grounded, validated answers</span>
                     </div>
                 </div>
                 <div class="hero-metrics">
@@ -54,7 +54,7 @@
                     <div id="selectedFiles" class="file-list-compact empty">No documents</div>
                     <button id="loadDocumentsBtn" class="button secondary small">Load to Vector Store</button>
                 </div>
-                
+
                 <div class="panel-divider"></div>
 
                 <div class="panel-section">
@@ -95,10 +95,6 @@
                                 <option value="local_only">Local Only (Full On-Premises)</option>
                             </select>
                         </div>
-                        <div class="expert-toggle">
-                            <input type="checkbox" id="expertMode">
-                            <label for="expertMode">Expert Mode</label>
-                        </div>
                         <button id="runQueryBtn" class="button primary">Run Analysis</button>
                     </div>
 
@@ -121,12 +117,6 @@
                             <div id="reasoningTimeline" class="reasoning-timeline"></div>
                         </article>
 
-                        <article class="result-card trace-card">
-                            <div class="result-card-header">
-                                <h4>System Trace</h4>
-                            </div>
-                            <div id="traceContent" class="chip-row"></div>
-                        </article>
                     </div>
                 </div>
 
@@ -142,10 +132,6 @@
                             <select id="compareDocumentSelect">
                                 <option value="all">All Documents</option>
                             </select>
-                        </div>
-                        <div class="expert-toggle">
-                            <input type="checkbox" id="compareExpertMode">
-                            <label for="compareExpertMode">Expert Mode</label>
                         </div>
                         <button id="runCompareBtn" class="button primary">Generate Comparative Report</button>
                     </div>
@@ -180,7 +166,7 @@
             </section>
         </main>
     </div>
-        </main>
+    </main>
     </div>
 
     <script src="{{ url_for('static', filename='app.js', v='20260409b') }}"></script>

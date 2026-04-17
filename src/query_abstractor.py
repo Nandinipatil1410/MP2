@@ -156,6 +156,119 @@ class QueryAbstractor:
         else:
             return "HIGH"
 
+    def classify_query_type_keywords(self, query: str) -> Dict[str, any]:
+        """
+        KEYWORD-BASED FALLBACK classifier (used internally by pipeline/intent_classifier.py).
+        Primary intent classification is now LLM-based (via intent_classifier.py).
+        Kept here for reference and testing.
+        """
+        """
+        Lightweight local query-type classifier used for routing.
+
+        Returns:
+          {
+            "query_type": "summary" | "extraction" | "reasoning" | "comparison" | "hypothetical",
+            "confidence": float (0-1),
+            "should_use_agentic": bool,
+            "reason": str
+          }
+        """
+        q = (query or "").strip()
+        ql = re.sub(r"\s+", " ", q.lower())
+
+        if not ql:
+            return {
+                "query_type": "extraction",
+                "confidence": 0.2,
+                "should_use_agentic": False,
+                "reason": "Empty query treated as direct lookup.",
+            }
+
+        # --- Summary / description (must override other patterns like "what is") ---
+        summary_phrases = [
+            "what is this document about",
+            "what is the document about",
+            "what is this paper about",
+            "what is this report about",
+            "what does this document talk about",
+            "what does this paper talk about",
+            "give me an overview",
+            "high level overview",
+            "summarize",
+            "summary of",
+            "describe this document",
+            "describe this paper",
+            "document overview",
+            "paper overview",
+            "main idea",
+            "what is this about",
+        ]
+        if any(p in ql for p in summary_phrases):
+            return {
+                "query_type": "summary",
+                "confidence": 0.95,
+                "should_use_agentic": False,
+                "reason": "Detected summary/overview intent.",
+            }
+
+        # --- Comparison ---
+        comparison_markers = ["compare", "difference between", "differences between", "vs ", " vs.", "versus"]
+        if any(m in ql for m in comparison_markers):
+            return {
+                "query_type": "comparison",
+                "confidence": 0.8,
+                "should_use_agentic": True,
+                "reason": "Detected comparison intent.",
+            }
+
+        # --- Hypothetical / counterfactual ---
+        hypothetical_markers = ["what if", "suppose", "imagine", "if we ", "if the "]
+        if any(m in ql for m in hypothetical_markers):
+            return {
+                "query_type": "hypothetical",
+                "confidence": 0.75,
+                "should_use_agentic": True,
+                "reason": "Detected hypothetical intent.",
+            }
+
+        # --- Reasoning / explanation ---
+        reasoning_markers = ["why", "how", "explain", "reason", "cause", "despite", "impact", "effect", "drivers"]
+        if any(re.search(rf"\b{re.escape(m)}\b", ql) for m in reasoning_markers):
+            return {
+                "query_type": "reasoning",
+                "confidence": 0.7,
+                "should_use_agentic": True,
+                "reason": "Detected explanatory/causal intent.",
+            }
+
+        # --- Extraction / lookup (default) ---
+        extraction_markers = [
+            "what is",
+            "who is",
+            "when",
+            "where",
+            "how many",
+            "list",
+            "extract",
+            "show",
+            "give me",
+            "find",
+        ]
+        if any(ql.startswith(m) or f" {m} " in ql for m in extraction_markers):
+            return {
+                "query_type": "extraction",
+                "confidence": 0.65,
+                "should_use_agentic": False,
+                "reason": "Detected direct lookup intent.",
+            }
+
+        return {
+            "query_type": "extraction",
+            "confidence": 0.4,
+            "should_use_agentic": False,
+            "reason": "Defaulted to extraction (no strong markers).",
+        }
+
 
 if __name__ == "__main__":
     # Test the abstractor

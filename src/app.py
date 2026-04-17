@@ -49,8 +49,9 @@ def get_state():
         "documents_loaded": orch.documents_loaded,
         "loaded_files": orch.get_document_list(),
         "stats": {
-            "local_model": orch.local_executor.model_name if hasattr(orch.local_executor, "model_name") else "mistral:latest",
-            "cloud_model": os.getenv("GROQ_MODEL", "llama3-70b-8192")
+            "local_model": orch.local_executor.model if hasattr(orch.local_executor, "model") else "phi3:mini",
+            "cloud_model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+            "pipeline": "intent-driven"
         }
     })
 
@@ -116,18 +117,23 @@ def query_api():
     mode = data.get("mode", "hybrid")
     expert_mode = data.get("expert_mode", False)
     selected_document = data.get("selected_document")
-    
+    # domain is no longer used — intent is classified automatically
+
     if selected_document == "all":
         selected_document = None
 
     if not query_text:
         return jsonify({"success": False, "error": "No query provided."}), 400
-    
+
     if mode == "hybrid":
-        result = orch.process_query_hybrid(query_text, expert_mode=expert_mode, selected_document=selected_document)
+        result = orch.process_query_hybrid(
+            query_text, expert_mode=expert_mode, selected_document=selected_document
+        )
     else:
-        result = orch.process_query_local_only(query_text, selected_document=selected_document)
-    
+        result = orch.process_query_local_only(
+            query_text, selected_document=selected_document
+        )
+
     return jsonify(result)
 
 @app.route("/api/compare", methods=["POST"])
@@ -140,15 +146,18 @@ def compare_api():
     query_text = data.get("query")
     expert_mode = data.get("expert_mode", False)
     selected_document = data.get("selected_document")
+    # domain is no longer used — intent is classified automatically
 
     if selected_document == "all":
         selected_document = None
 
     if not query_text:
         return jsonify({"success": False, "error": "No query provided."}), 400
-    
+
     judge = LLMJudge()
-    results = orch.compare_approaches(query_text, expert_mode=expert_mode, selected_document=selected_document)
+    results = orch.compare_approaches(
+        query_text, expert_mode=expert_mode, selected_document=selected_document
+    )
     
     # Check if any modes failed
     if not results.get("hybrid", {}).get("success") or not results.get("local_only", {}).get("success"):

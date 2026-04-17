@@ -4,4 +4,6 @@ __pycache__/
 *.pyc
 data/vector_db/
 results/
-official_evaluation_results.json
+official_evaluation_results.json
+hybridenv
+.venv
