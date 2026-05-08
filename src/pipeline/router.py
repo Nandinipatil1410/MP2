@@ -11,15 +11,15 @@ PATH_COMPARISON = "comparison_path"
 
 # Whether each path uses the cloud planner
 PATH_USES_PLANNER = {
-    PATH_SUMMARY: False,
+    PATH_SUMMARY: True,
     PATH_EXTRACTION: False,
     PATH_REASONING: True,
     PATH_COMPARISON: True,
 }
 
 _INTENT_TO_PATH = {
-    "summary": PATH_SUMMARY,
-    "extraction": PATH_EXTRACTION,
+    "summary": PATH_REASONING,     # Now uses planner for deep summaries
+    "extraction": PATH_REASONING,  # Now uses planner for deep extraction
     "reasoning": PATH_REASONING,
     "comparison": PATH_COMPARISON,
 }

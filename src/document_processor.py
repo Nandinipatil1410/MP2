@@ -12,7 +12,7 @@ import re
 class DocumentProcessor:
     """Process various document types and extract text"""
     
-    def __init__(self, chunk_size: int = 500, chunk_overlap: int = 50):
+    def __init__(self, chunk_size: int = 800, chunk_overlap: int = 150):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
     
@@ -20,12 +20,60 @@ class DocumentProcessor:
         """Extract text from PDF file with multiple fallbacks and OCR"""
         text = ""
         try:
-            # 1. Try PyPDF2 (fastest)
-            with open(file_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
-                num_pages = len(pdf_reader.pages)
-                for page in pdf_reader.pages:
-                    text += (page.extract_text() or "") + "\n"
+            # 1. Try pdfplumber for robust text and table extraction
+            import pdfplumber
+            with pdfplumber.open(file_path) as pdf:
+                num_pages = len(pdf.pages)
+                for page in pdf.pages:
+                    # Extract standard text
+                    page_text = page.extract_text() or ""
+                    text += page_text + "\n"
+                    
+                    # Extract tables separately and format them cleanly
+                    tables = page.extract_tables()
+                    if tables:
+                        text += f"\n--- Tables Found on Page (Source: {Path(file_path).name}) ---\n"
+                        for table in tables:
+                            if not table or not any(table): continue
+                            # Try to identify header row (usually first non-empty row)
+                            headers = []
+                            for row in table:
+                                if row and any(row):
+                                    headers = [str(h).strip().replace('\n', ' ') for h in row if h]
+                                    break
+                            
+                            current_section = ""
+                            for row in table:
+                                # Clean up cell content and join with '|'
+                                clean_row = [str(cell).replace('\n', ' ').strip() if cell is not None else "" for cell in row]
+                                if not any(clean_row): continue
+                                
+                                # Detect Section headers (e.g., "I Income", "II Expenditure")
+                                non_empty = [c for c in clean_row if c]
+                                if len(non_empty) == 1:
+                                    item = non_empty[0]
+                                    if re.match(r'^[IVX]+[\.\s]', item):
+                                        current_section = re.sub(r'^[IVX]+[\.\s]+', '', item).strip()
+                                        text += f"--- Section: {current_section} ---\n"
+                                        continue
+
+                                # Contextualize "Total" rows
+                                if "total" in clean_row[0].lower() and current_section:
+                                    if clean_row[0].strip().lower() == "total":
+                                        clean_row[0] = f"Total {current_section}"
+                                
+                                # Format as key-value if possible, else standard row
+                                row_str = ""
+                                if len(headers) == len(clean_row):
+                                    row_str = " | ".join([f"{h}: {v}" if h and v else v for h, v in zip(headers, clean_row)])
+                                else:
+                                    row_str = " | ".join(clean_row)
+                                
+                                if current_section and current_section.lower() not in row_str.lower():
+                                    row_str = f"[{current_section}] {row_str}"
+
+                                text += row_str + "\n"
+                            text += "\n"
             
             # 2. Check if extraction is "suspiciously" low quality
             # (e.g., only copyright notice from a multi-page doc)
@@ -112,17 +160,21 @@ class DocumentProcessor:
         else:
             raise ValueError(f"Unsupported file type: {extension}")
     
-    def chunk_text(self, text: str) -> List[Dict[str, str]]:
-        """Split text into overlapping chunks"""
-        # Clean text
-        text = re.sub(r'\s+', ' ', text).strip()
+    def chunk_text(self, text: str, source_name: str = "") -> List[Dict[str, str]]:
+        """Split text into overlapping word-based chunks while preserving newlines and injecting context"""
+        text = re.sub(r'[ \t]+', ' ', text)
+        text = re.sub(r'\n{3,}', '\n\n', text).strip()
         
         chunks = []
-        words = text.split()
+        words = text.split(' ')
+        
+        # Inject source context into every chunk to aid retrieval and grounding
+        context_prefix = f"[Document: {source_name}] " if source_name else ""
         
         for i in range(0, len(words), self.chunk_size - self.chunk_overlap):
             chunk_words = words[i:i + self.chunk_size]
-            chunk_text = ' '.join(chunk_words)
+            chunk_body = ' '.join(chunk_words)
+            chunk_text = context_prefix + chunk_body
             
             chunks.append({
                 'text': chunk_text,
@@ -132,20 +184,21 @@ class DocumentProcessor:
             
             if i + self.chunk_size >= len(words):
                 break
-        
+                
         return chunks
-    
+
     def process_and_chunk(self, file_path: str) -> List[Dict[str, str]]:
         """Complete pipeline: process file and create chunks"""
         text = self.process_file(file_path)
         if not text:
             return []
         
-        chunks = self.chunk_text(text)
+        source_name = Path(file_path).name
+        chunks = self.chunk_text(text, source_name=source_name)
         
         # Add metadata
         for chunk in chunks:
-            chunk['source'] = Path(file_path).name
+            chunk['source'] = source_name
         
         return chunks
 

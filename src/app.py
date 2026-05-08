@@ -106,6 +106,35 @@ def load_documents_api():
     else:
         return jsonify({"success": False, "error": "Failed to process documents."}), 500
 
+
+@app.route("/api/clear-session", methods=["POST"])
+def clear_session_api():
+    """Wipe the vector store, document metadata, and all uploaded document files."""
+    import shutil
+    orch = STATE["orchestrator"]
+    if not orch:
+        return jsonify({"success": False, "error": "Orchestrator not initialized."}), 400
+
+    try:
+        # 1. Clear in-memory vector store
+        orch.vector_store.clear()
+        orch.documents_loaded = False
+
+        # 2. Delete persisted FAISS index files
+        vector_db_dir = BASE_DIR / "data" / "vector_db"
+        for f in vector_db_dir.glob("vector_store*"):
+            f.unlink(missing_ok=True)
+
+        # 3. Delete uploaded document files
+        if DOCUMENTS_DIR.exists():
+            shutil.rmtree(DOCUMENTS_DIR)
+            DOCUMENTS_DIR.mkdir(parents=True, exist_ok=True)
+
+        return jsonify({"success": True, "message": "Session cleared. All documents and embeddings removed."})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route("/api/query", methods=["POST"])
 def query_api():
     orch = STATE["orchestrator"]

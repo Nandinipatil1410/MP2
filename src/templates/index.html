@@ -51,8 +51,17 @@
                         <input id="documentsInput" type="file" multiple accept=".pdf,.txt,.docx">
                         <span class="upload-title">Add source material</span>
                     </label>
-                    <div id="selectedFiles" class="file-list-compact empty">No documents</div>
+                    <div id="selectedFiles" class="file-list-compact empty">No documents selected</div>
                     <button id="loadDocumentsBtn" class="button secondary small">Load to Vector Store</button>
+
+                    <!-- Persisted Documents Section -->
+                    <div id="persistedDocsSection" class="persisted-docs-section hidden">
+                        <div class="persisted-docs-header">
+                            <span class="persisted-label">📂 Active Knowledge Base</span>
+                            <button id="clearSessionBtn" class="button danger small" title="Wipe all documents and embeddings">Clear Session</button>
+                        </div>
+                        <div id="persistedFileList" class="file-list-compact"></div>
+                    </div>
                 </div>
 
                 <div class="panel-divider"></div>
@@ -65,6 +74,7 @@
                     </div>
                 </div>
             </section>
+
 
             <section class="tabs-card">
                 <div class="tabs-header">
@@ -133,28 +143,11 @@
                                 <option value="all">All Documents</option>
                             </select>
                         </div>
-                        <button id="runCompareBtn" class="button primary">Generate Comparative Report</button>
+                        <button id="runCompareBtn" class="button primary">Compare Answers</button>
                     </div>
 
                     <div id="compareStatus" class="inline-status hidden"></div>
                     <div id="compareResults" class="compare-layout hidden">
-                        <section class="result-card">
-                            <div class="result-card-header">
-                                <h4>LLM Judge Verdict</h4>
-                            </div>
-                            <div id="judgeMeta" class="chip-row"></div>
-                            <div id="judgeWinner" class="verdict-box hidden"></div>
-                            <ul id="judgeDiffs" class="verdict-list hidden"></ul>
-                            <div id="judgeScores" class="table-wrap hidden"></div>
-                        </section>
-
-                        <section class="result-card">
-                            <div class="result-card-header">
-                                <h4>Privacy Validation</h4>
-                            </div>
-                            <div id="privacyValidation" class="table-wrap"></div>
-                        </section>
-
                         <section class="result-card full-width">
                             <div class="result-card-header">
                                 <h4>Response Comparison</h4>

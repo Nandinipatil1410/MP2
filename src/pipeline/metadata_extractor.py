@@ -55,6 +55,7 @@ def extract_document_metadata(
 
     prompt = _METADATA_PROMPT.format(context=safe_context)
 
+    print(f"\n--- [MetadataExtractor] LOCAL PROMPT ---\n{prompt}\n" + "-"*40)
     try:
         response = requests.post(
             f"{ollama_url}/api/generate",

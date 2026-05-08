@@ -22,6 +22,9 @@ class VectorStore:
         self.index = None
         self.documents = []
         self.dimension = 384  # Dimension for all-MiniLM-L6-v2
+
+        # Auto-load any previously saved index so embeddings survive server restarts
+        self.load()
     
     def create_embeddings(self, texts: List[str]) -> np.ndarray:
         """Create embeddings for a list of texts"""
@@ -29,7 +32,7 @@ class VectorStore:
         return np.array(embeddings).astype('float32')
     
     def build_index(self, documents: List[Dict[str, str]]):
-        """Build FAISS index from documents"""
+        """Build FAISS index from documents and persist it to disk"""
         # Extract text from documents
         texts = [doc['text'] for doc in documents]
         
@@ -45,11 +48,15 @@ class VectorStore:
         self.documents = documents
         
         print(f" Built index with {len(documents)} documents")
+
+        # Persist to disk automatically so embeddings survive restarts
+        self.save()
+
     
     def add_documents(self, new_documents: List[Dict[str, str]]):
         """Add new documents to existing index"""
         if self.index is None:
-            self.build_index(new_documents)
+            self.build_index(new_documents)  # build_index already saves
             return
         
         texts = [doc['text'] for doc in new_documents]
@@ -59,6 +66,7 @@ class VectorStore:
         self.documents.extend(new_documents)
         
         print(f" Added {len(new_documents)} documents. Total: {len(self.documents)}")
+        self.save()  # Persist the updated index
     
     def search(self, query: str, top_k: int = 3, source: str = None) -> List[Dict[str, any]]:
         """
@@ -141,23 +149,26 @@ class VectorStore:
         print(f" Saved vector store to {self.vector_db_path}")
     
     def load(self, name: str = "vector_store"):
-        """Load index and documents from disk"""
+        """Load index and documents from disk. Called automatically on init."""
         index_path = self.vector_db_path / f"{name}.index"
-        docs_path = self.vector_db_path / f"{name}_docs.pkl"
+        docs_path  = self.vector_db_path / f"{name}_docs.pkl"
         
         if not index_path.exists() or not docs_path.exists():
-            print("No saved vector store found")
             return False
         
-        # Load FAISS index
-        self.index = faiss.read_index(str(index_path))
-        
-        # Load documents
-        with open(docs_path, 'rb') as f:
-            self.documents = pickle.load(f)
-        
-        print(f" Loaded vector store with {len(self.documents)} documents")
-        return True
+        try:
+            # Load FAISS index
+            self.index = faiss.read_index(str(index_path))
+            # Load documents
+            with open(docs_path, 'rb') as f:
+                self.documents = pickle.load(f)
+            print(f" Loaded persisted vector store: {len(self.documents)} chunks from {index_path}")
+            return True
+        except Exception as e:
+            print(f"  Warning: Could not load saved vector store ({e}). Starting fresh.")
+            self.index = None
+            self.documents = []
+            return False
     
     def clear(self):
         """Clear the vector store"""

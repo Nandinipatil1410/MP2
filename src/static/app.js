@@ -28,17 +28,16 @@ const elements = {
     runCompareBtn: document.getElementById("runCompareBtn"),
     compareStatus: document.getElementById("compareStatus"),
     compareResults: document.getElementById("compareResults"),
-    judgeMeta: document.getElementById("judgeMeta"),
-    judgeWinner: document.getElementById("judgeWinner"),
-    judgeDiffs: document.getElementById("judgeDiffs"),
-    judgeScores: document.getElementById("judgeScores"),
-    privacyValidation: document.getElementById("privacyValidation"),
     responseColumns: document.getElementById("responseColumns"),
     documentSelect: document.getElementById("documentSelect"),
     compareDocumentSelect: document.getElementById("compareDocumentSelect"),
     copyAnalysisBtn: document.getElementById("copyAnalysisBtn"),
     reasoningTimeline: document.getElementById("reasoningTimeline"),
     reasoningCard: document.getElementById("reasoningCard"),
+    // Persistence UI
+    clearSessionBtn: document.getElementById("clearSessionBtn"),
+    persistedDocsSection: document.getElementById("persistedDocsSection"),
+    persistedFileList: document.getElementById("persistedFileList"),
 };
 
 function setStatus(target, message, type = "status-success") {
@@ -63,41 +62,88 @@ function escapeHtml(text) {
 
 function parseMarkdown(text) {
     if (!text) return "";
-    let html = escapeHtml(text);
     
-    // Headers
-    html = html.replace(/^### (.*$)/gim, '<h4>$1</h4>');
-    html = html.replace(/^## (.*$)/gim, '<h3>$1</h3>');
-    html = html.replace(/^# (.*$)/gim, '<h2>$1</h2>');
-    
-    // Bold and Italic
+    let html = escapeHtml(text)
+        .replace(/\r\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n');
+
+    // --- Pre-normalize: pull inline headers onto their own line ---
+    // The cloud LLM sometimes emits "some text. ## Header more text" on one line.
+    // Move any ## / ### that appear mid-line to start on their own newline.
+    html = html.replace(/([^\n])(#{2,3} )/g, '$1\n$2');
+
+    // Split joined numbered list items (e.g. "1. First 2. Second") but only
+    // when the digit follows a word boundary so decimals like "28.4" are safe.
+    html = html.replace(/(\S) (\d+\.\s)/g, '$1\n$2');
+
+    // Strip standalone hash symbols which LLMs sometimes emit as broken dividers
+    html = html.replace(/^#+\s*$/gim, '');
+
+    // Headers (must be on their own line — the /m flag makes ^ match line-start)
+    html = html.replace(/^#### (.*$)/gim, '<h5>$1</h5>');
+    html = html.replace(/^### (.*$)/gim,  '<h4>$1</h4>');
+    html = html.replace(/^## (.*$)/gim,   '<h3>$1</h3>');
+    html = html.replace(/^# (.*$)/gim,    '<h2>$1</h2>');
+
+    // Bold, Italic, Inline Code
     html = html.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+    html = html.replace(/\*(.*?)\*/gim,     '<em>$1</em>');
+    html = html.replace(/`(.*?)`/gim,       '<code>$1</code>');
+
+    // Line-by-line processing for paragraphs and lists
+    const lines = html.split('\n');
+    let inList = null; // 'ul', 'ol', or null
+    let result = [];
+
+    lines.forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed === '') {
+            if (inList) {
+                result.push(`</${inList}>`);
+                inList = null;
+            }
+            return;
+        }
+
+        // Bullet list: lines starting with "- " or "* "
+        const bulletMatch = trimmed.match(/^[-*] (.*)/);
+        // Numbered list: lines starting with "1. " etc.
+        const numberMatch = trimmed.match(/^\d+\.\s+(.*)/);
+
+        if (bulletMatch) {
+            if (inList !== 'ul') {
+                if (inList) result.push(`</${inList}>`);
+                result.push('<ul>');
+                inList = 'ul';
+            }
+            result.push(`<li>${bulletMatch[1]}</li>`);
+        } else if (numberMatch) {
+            if (inList !== 'ol') {
+                if (inList) result.push(`</${inList}>`);
+                result.push('<ol>');
+                inList = 'ol';
+            }
+            result.push(`<li>${numberMatch[1]}</li>`);
+        } else {
+            // Not a list item
+            if (inList) {
+                result.push(`</${inList}>`);
+                inList = null;
+            }
+            // Already-converted HTML tags (headers etc.) pass through as-is
+            if (trimmed.startsWith('<')) {
+                result.push(trimmed);
+            } else {
+                result.push(`<p>${trimmed}</p>`);
+            }
+        }
+    });
+
+    if (inList) result.push(`</${inList}>`);
     
-    // Lists
-    html = html.replace(/^\s*\n\*/gm, '<ul>\n*');
-    html = html.replace(/^(\*|\-) (.*)/gim, '<li>$2</li>');
-    html = html.replace(/<\/li>\n/gim, '</li>');
-    html = html.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>');
-    html = html.replace(/<\/ul>\n<ul>/gim, '\n');
-    
-    // Numbered Lists
-    html = html.replace(/^\s*\n\d\./gm, '<ol>\n1.');
-    html = html.replace(/^\d\.\s+(.*)/gim, '<li>$1</li>');
-    html = html.replace(/(<li>.*<\/li>)/gim, '<ol>$1</ol>');
-    html = html.replace(/<\/ol>\n<ol>/gim, '\n');
-    
-    // Paragraphs and Line breaks
-    html = html.replace(/\n\n/gim, '</p><p>');
-    html = '<p>' + html + '</p>';
-    
-    // Clean up empty paragraphs
-    html = html.replace(/<p><\/p>/g, '');
-    html = html.replace(/<p><(h1|h2|h3|h4|ul|ol)/g, '<$1');
-    html = html.replace(/(<\/h1>|<\/h2>|<\/h3>|<\/h4>|<\/ul>|<\/ol>)<\/p>/g, '$1');
-    
-    return html;
+    return result.join('\n');
 }
+
 
 function renderFileList(files) {
     if (!files.length) {
@@ -123,9 +169,11 @@ function renderTrace(result) {
         chips.push(`Documents Used: ${result.documents_used}`);
     }
 
-    elements.traceContent.innerHTML = chips
-        .map((chip) => `<span class="metric-chip">${escapeHtml(chip)}</span>`)
-        .join("");
+    if (elements.traceContent) {
+        elements.traceContent.innerHTML = chips
+            .map((chip) => `<span class="metric-chip">${escapeHtml(chip)}</span>`)
+            .join("");
+    }
 }
 
 function renderTable(headers, rows) {
@@ -270,6 +318,8 @@ async function loadState() {
         state.documentsLoaded = data.documents_loaded;
         renderFileList((data.loaded_files || []).map((name) => ({ name })));
         setRuntimeMetrics(data);
+        // Show persisted docs from vector store (Option 2)
+        renderPersistedDocs(data.loaded_files || []);
         if (state.documentsLoaded) {
             await loadDocumentList();
         }
@@ -317,6 +367,42 @@ function setupCopyFeature() {
                 setTimeout(() => (elements.copyAnalysisBtn.textContent = originalText), 2000);
             });
         });
+    }
+}
+
+/** Renders the Active Knowledge Base panel from persisted vector store files. */
+function renderPersistedDocs(fileNames) {
+    if (!elements.persistedDocsSection || !elements.persistedFileList) return;
+    if (!fileNames || fileNames.length === 0) {
+        elements.persistedDocsSection.classList.add("hidden");
+        return;
+    }
+    elements.persistedFileList.innerHTML = fileNames
+        .map((name) => `<div class="file-chip persisted">${escapeHtml(name.split('/').pop().split('\\\\').pop())}</div>`)
+        .join("");
+    elements.persistedDocsSection.classList.remove("hidden");
+}
+
+async function clearSession() {
+    if (!confirm("This will permanently delete all loaded documents and their embeddings. Continue?")) return;
+    clearStatus(elements.statusBanner);
+    setStatus(elements.statusBanner, "Clearing session...", "status-warning");
+    try {
+        const data = await fetchJson("/api/clear-session", { method: "POST" });
+        state.documentsLoaded = false;
+        state.selectedFiles = [];
+        renderFileList([]);
+        renderPersistedDocs([]);
+        elements.queryResult?.classList.add("hidden");
+        elements.compareResults?.classList.add("hidden");
+        elements.reasoningCard?.classList.add("hidden");
+        const allOption = '<option value="all">All Documents</option>';
+        if (elements.documentSelect) elements.documentSelect.innerHTML = allOption;
+        if (elements.compareDocumentSelect) elements.compareDocumentSelect.innerHTML = allOption;
+        setRuntimeMetrics({ initialized: true, documents_loaded: false, loaded_files: [], stats: {} });
+        setStatus(elements.statusBanner, data.message || "Session cleared.", "status-success");
+    } catch (error) {
+        setStatus(elements.statusBanner, error.message, "status-error");
     }
 }
 
@@ -394,15 +480,11 @@ async function runComparison() {
                 query: elements.compareInput.value,
                 expert_mode: true,
                 selected_document: elements.compareDocumentSelect.value,
-                // intent is auto-classified server-side
             }),
         });
-        const results = payload.results;
-        renderComparison(results);
-        renderPrivacyTransparency(results);
-        renderJudge(payload.judge);
+        renderComparison(payload.results);
         elements.compareResults.classList.remove("hidden");
-        setStatus(elements.compareStatus, "Comparison report generated successfully.", "status-success");
+        setStatus(elements.compareStatus, "Comparison complete.", "status-success");
     } catch (error) {
         setStatus(elements.compareStatus, error.message, "status-error");
     }
@@ -419,6 +501,9 @@ function init() {
     elements.loadDocumentsBtn.addEventListener("click", loadDocuments);
     elements.runQueryBtn.addEventListener("click", runQuery);
     elements.runCompareBtn.addEventListener("click", runComparison);
+    if (elements.clearSessionBtn) {
+        elements.clearSessionBtn.addEventListener("click", clearSession);
+    }
     loadState();
 }
 

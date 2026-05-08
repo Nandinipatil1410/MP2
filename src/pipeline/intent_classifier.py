@@ -61,23 +61,36 @@ def _classify_with_llm(query: str, groq_client) -> str:
         model = "llama3-8b-8192"
 
     try:
+        user_prompt = _CLASSIFICATION_PROMPT.format(query=query)
+        
         response = groq_client.chat.completions.create(
             model=model,
             messages=[
                 {
                     "role": "user",
-                    "content": _CLASSIFICATION_PROMPT.format(query=query),
+                    "content": user_prompt,
                 }
             ],
             temperature=0.0,
             max_tokens=10,
         )
-        label = response.choices[0].message.content.strip().lower()
+        label = response.choices[0].message.content.strip()
+        
+        # Enhanced terminal logging for transparency
+        print(f"\n\n{'='*80}")
+        print(f" \U0001f310 CLOUD HANDSHAKE: Intent Classification")
+        print(f"{'='*80}")
+        print(f"\nUSER PROMPT:\n{'-'*20}")
+        print(user_prompt)
+        print(f"\n\u2705 CLOUD RESPONSE:\n{'-'*20}")
+        print(label)
+        print(f"{'='*80}\n")
+
         # Normalise: strip quotes / punctuation
-        label = re.sub(r"[^a-z]", "", label)
-        return label
+        label_norm = re.sub(r"[^a-z]", "", label.lower())
+        return label_norm
     except Exception as e:
-        print(f"  [IntentClassifier] LLM call failed ({e}), using keyword fallback.")
+        print(f"\n\u274c [IntentClassifier] LLM call failed ({e}), using keyword fallback.")
         return ""
 
 

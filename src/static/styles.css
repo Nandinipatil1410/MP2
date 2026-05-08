@@ -333,6 +333,64 @@ select {
     border: 1px solid #d4e3fb;
 }
 
+/* Danger (destructive) button */
+.button.danger {
+    background: #fff0f0;
+    color: #dc2626;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.button.danger:hover {
+    background: #fef2f2;
+    border-color: rgba(220, 38, 38, 0.4);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+}
+
+/* Small button modifier */
+.button.small {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    border-radius: 10px;
+}
+
+/* Persisted documents panel */
+.persisted-docs-section {
+    margin-top: 4px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(8, 145, 178, 0.05) 0%, rgba(79, 70, 229, 0.04) 100%);
+    border: 1px solid rgba(8, 145, 178, 0.18);
+}
+
+.persisted-docs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.persisted-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.file-chip.persisted {
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: rgba(8, 145, 178, 0.08);
+    border: 1px solid rgba(8, 145, 178, 0.2);
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+
 .status-banner,
 .inline-status {
     padding: 14px 16px;
@@ -721,7 +779,7 @@ select:focus,
 
 .compare-layout {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 24px;
     align-items: start;
     margin-top: 30px;
@@ -766,9 +824,51 @@ select:focus,
 
 
 .formatted-output {
-    white-space: pre-wrap;
-    line-height: 1.7;
+    line-height: 1.6;
     color: var(--text);
+}
+
+.formatted-output h2,
+.formatted-output h3,
+.formatted-output h4 {
+    margin-top: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary);
+}
+
+.formatted-output h2:first-child,
+.formatted-output h3:first-child,
+.formatted-output h4:first-child {
+    margin-top: 0;
+}
+
+.formatted-output p {
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+}
+
+.formatted-output ul,
+.formatted-output ol {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.formatted-output li {
+    margin-bottom: 0.35rem;
+}
+
+.formatted-output li:last-child {
+    margin-bottom: 0;
+}
+
+.formatted-output code {
+    background: var(--surface-soft);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.9em;
+    color: var(--accent);
 }
 
 .reasoning-timeline {

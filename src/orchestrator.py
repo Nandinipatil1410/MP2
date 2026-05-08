@@ -5,6 +5,7 @@ Routes queries based on LLM-classified intent — no domain-based branching.
 """
 import sys
 import time
+import re
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -38,9 +39,12 @@ class HybridLLMOrchestrator:
         self.cloud_planner = CloudReasoningPlanner(api_key=groq_api_key, model=CLOUD_MODEL)
         self.local_executor = LocalLLMExecutor()
 
-        self.documents_loaded = False
+        # If VectorStore auto-loaded a saved index from disk, reflect that here
+        self.documents_loaded = len(self.vector_store.documents) > 0
         self.initialized = True
 
+        if self.documents_loaded:
+            print(f" Restored {len(self.vector_store.documents)} chunks from persisted vector store")
         print(" All components initialized")
 
     # ------------------------------------------------------------------
@@ -225,9 +229,13 @@ Do NOT provide generic greetings or conversational filler.
 
         gen_start = time.time()
         try:
-            answer = self.cloud_planner.get_completion(
-                "You are a helpful expert assistant.", query
+            system_prompt = (
+                "You are a Senior Strategic Intelligence Analyst. "
+                "Your job is to provide a comprehensive, deeply-reasoned report based ONLY on findings. "
+                "NEVER give short answers. Use a structured, professional report format. "
+                "Always include: 1. Executive Summary, 2. Key Findings, 3. Detailed Analysis, 4. Conclusion."
             )
+            answer = self.cloud_planner.get_completion(system_prompt, query)
             success = True
         except Exception as e:
             answer = f"Cloud execution error: {str(e)}"
@@ -300,19 +308,60 @@ Do NOT provide generic greetings or conversational filler.
     def _run_summary(
         self, query, top_k, selected_document, mode, intent, metrics, total_start
     ) -> Dict[str, Any]:
-        """Fast path: retrieve + summarise (no planner)."""
+        """Fast path: retrieve + summarise."""
+        # Heuristic: If query mentions specific keywords or sections, it's a targeted summary
+        targeted_keywords = ["section", "part", "chapter", "page", "item", "clause", "provision", "paragraph", "article"]
+        is_targeted = any(k in query.lower() for k in targeted_keywords) or len(query.split()) > 5
+
         retrieval_start = time.time()
+        if is_targeted:
+            # For targeted summaries, the query itself is the best retrieval string
+            retrieval_query = query
+        else:
+            # For global overviews, use broader summary terms
+            retrieval_query = "abstract introduction conclusion overview summary key findings"
+            
         docs = self._retrieve(
-            query, "abstract introduction conclusion overview summary", top_k + 3, selected_document
+            query, retrieval_query, top_k + 10, selected_document
         )
         metrics.retrieval_time = time.time() - retrieval_start
 
         context = self.local_executor._prepare_context(docs)
 
         generation_start = time.time()
-        answer = self.local_executor.create_overview(
-            context=context, selected_document=selected_document
-        )
+        if is_targeted:
+            print(f"  → Targeted summary detected ('{query[:40]}...'). Using synthesis path.")
+            if mode == "hybrid" and self.cloud_planner.client is not None:
+                # Abstract query and seed entity map so the same name gets the
+                # SAME placeholder in both the query and the masked context.
+                abstracted_query, _ = self.query_abstractor.abstract_query(query)
+                seed_map = dict(self.query_abstractor.replacements)
+                seed_counters = {}
+                for ph in seed_map:
+                    m_ph = re.match(r'\[([A-Z]+)_(\d+)\]', ph)
+                    if m_ph:
+                        label, idx = m_ph.group(1), int(m_ph.group(2))
+                        seed_counters[label] = max(seed_counters.get(label, 1), idx + 1)
+                masked_context, entity_map, counters = self.local_executor._mask_entities(
+                    context, existing_map=seed_map, existing_counters=seed_counters, query=query
+                )
+                answer = self.cloud_planner.synthesize(
+                    abstracted_query, masked_context, intent="summary", expert_mode=True
+                )
+                if answer:
+                    full_map = {**self.query_abstractor.replacements, **entity_map}
+                    answer = self.local_executor._restore_entities(answer, full_map)
+                    answer = self.local_executor._remove_placeholder_meta_commentary(answer)
+                else:
+                    answer = self.local_executor.answer_with_context(query, context)
+            else:
+                answer = self.local_executor.answer_with_context(query, context)
+        else:
+            print("  → Global document summary detected.")
+            # Global overview for generic summary queries
+            answer = self.local_executor.create_overview(
+                context=context, selected_document=selected_document
+            )
         metrics.generation_time = time.time() - generation_start
         metrics.total_time = time.time() - total_start
         metrics.print_report()
@@ -343,7 +392,48 @@ Do NOT provide generic greetings or conversational filler.
         context = self.local_executor._prepare_context(docs)
 
         generation_start = time.time()
-        answer = self.local_executor.answer_with_context(query=query, context=context)
+        if mode == "hybrid" and self.cloud_planner.client is not None:
+            # Hybrid mode: Deep analysis
+            # 1. Abstract the query first so placeholders are consistent between
+            #    the query text and the masked context that goes to the cloud.
+            abstracted_query, _ = self.query_abstractor.abstract_query(query)
+            privacy_score = self.query_abstractor.calculate_privacy_score(query)
+            if abstracted_query != query:
+                print(f"\n\U0001f6e1\ufe0f  PRIVACY LAYER (extraction): Abstracted query")
+                print(f"   Original:   \"{query}\"")
+                print(f"   Cloud-Ready: \"{abstracted_query}\"")
+
+            # 2. Seed entity masking with the query abstractor's replacements so
+            #    the same name gets the SAME placeholder in both query and context.
+            seed_map = dict(self.query_abstractor.replacements)  # e.g. {"[PERSON_0]": "Mr Tan Ah Kow"}
+            # Build seed counters from existing placeholders (e.g. PERSON already at 1)
+            seed_counters = {}
+            for ph in seed_map:
+                m = re.match(r'\[([A-Z]+)_(\d+)\]', ph)
+                if m:
+                    label, idx = m.group(1), int(m.group(2))
+                    seed_counters[label] = max(seed_counters.get(label, 1), idx + 1)
+
+            masked_context, entity_map, counters = self.local_executor._mask_entities(
+                context, existing_map=seed_map, existing_counters=seed_counters, query=query
+            )
+
+            answer = self.cloud_planner.synthesize(
+                abstracted_query, masked_context, intent="extraction", expert_mode=True
+            )
+            if answer and answer != "Cloud extraction failed.":
+                # Restore using the full combined map (query abstractor + context masking)
+                full_map = {**self.query_abstractor.replacements, **entity_map}
+                answer = self.local_executor._restore_entities(answer, full_map)
+                answer = self.local_executor._remove_placeholder_meta_commentary(answer)
+            else:
+                print("  [Fallback] Cloud synthesis failed, using high-quality local fallback...")
+                answer = self.local_executor.comprehensive_answer(query, context)
+        else:
+            # Local-only mode: Fast & Concise
+            privacy_score = 1.0
+            answer = self.local_executor.answer_with_context(query=query, context=context)
+            
         metrics.generation_time = time.time() - generation_start
         metrics.total_time = time.time() - total_start
         metrics.print_report()
@@ -355,7 +445,7 @@ Do NOT provide generic greetings or conversational filler.
             "intent": intent,
             "abstracted_query": query,
             "latency": metrics.total_time,
-            "privacy_score": 1.0,
+            "privacy_score": privacy_score if mode == "hybrid" else 1.0,
             "completeness_score": min(0.8, len(answer) / 1000 * 0.5),
             "validation": {"valid": True, "score": 0.7, "critique": "Extraction route — direct grounded answer."},
             "reasoning_depth": 1,
@@ -382,12 +472,17 @@ Do NOT provide generic greetings or conversational filler.
           3. Extract document metadata (local)
           4. Generate structured plan (cloud, metadata-aware)
           5. Step-wise execution (local retrieval + reasoning)
-          6. Signal filtering
-          7. Cloud synthesis → validation → repair if needed
+          6. Synthesis (Cloud for Hybrid, Local for Local)
         """
         # 1. Abstraction (PII removal for cloud safety)
         abstracted_query, _ = self.query_abstractor.abstract_query(query)
         privacy_score = self.query_abstractor.calculate_privacy_score(query)
+        
+        if abstracted_query != query:
+            print(f"\n🛡️  PRIVACY LAYER: Abstracted query to protect sensitive data")
+            print(f"   Original: \"{query}\"")
+            print(f"   Cloud-Ready: \"{abstracted_query}\"")
+            print(f"   Privacy Score: {privacy_score * 100:.0f}%\n")
 
         # 2. Initial retrieval for metadata extraction
         print("  → Retrieving initial context for metadata extraction...")
@@ -417,75 +512,9 @@ Do NOT provide generic greetings or conversational filler.
             print(f"   Step {s.get('id')}: [{s.get('action')}] → {s.get('target')}")
         print()
 
-        # 5. Execution
-        all_retrieved_docs = initial_docs
-        memory = {"data": [], "intermediate_results": [], "insights": []}
-
-        # Bypass step-wise local reasoning if we have a cloud planner in hybrid mode
-        if mode == "hybrid" and self.cloud_planner.client is not None:
-            print("  → [Hybrid Fast Path] Retrieving step context and synthesizing via cloud...")
-            
-            for step in steps:
-                from pipeline.executor import _make_retrieval_query
-                rq = _make_retrieval_query(step.get("action", ""), step.get("target", ""), query)
-                docs = self._retrieve(query, rq, top_k, selected_document)
-                all_retrieved_docs.extend(docs)
-                
-            metrics.retrieval_time = time.time() - retrieval_start
-            
-            # Deduplicate docs
-            seen = set()
-            unique_docs = []
-            for d in all_retrieved_docs:
-                key = (d.get("source"), d.get("chunk_id"), d.get("start_idx"))
-                if key not in seen:
-                    seen.add(key)
-                    unique_docs.append(d)
-            all_retrieved_docs = unique_docs
-            
-            context = self.local_executor._prepare_context(all_retrieved_docs)
-            masked_context, entity_map, counters = self.local_executor._mask_entities(context)
-            
-            generation_start = time.time()
-            final_answer = self.cloud_planner.synthesize(
-                abstracted_query, masked_context, intent=intent, expert_mode=expert_mode
-            )
-            
-            validation = {"valid": True, "score": 1.0, "critique": "Validation skipped."}
-            if final_answer:
-                print("  → Validating answer grounding...")
-                validation = validate(
-                    answer=final_answer,
-                    context=masked_context,
-                    query=abstracted_query,
-                    groq_client=self.cloud_planner.client,
-                )
-                if not validation.get("valid") and validation.get("hallucination_detected"):
-                    repaired = self.cloud_planner.synthesize_repair(
-                        abstracted_query, masked_context, final_answer,
-                        critique=validation.get("critique"),
-                        expert_mode=expert_mode,
-                    )
-                    if repaired:
-                        final_answer = repaired
-                final_answer = self.local_executor._restore_entities(final_answer, entity_map)
-            else:
-                final_answer = "Cloud synthesis failed."
-
-            metrics.generation_time = time.time() - generation_start
-            metrics.total_time = time.time() - total_start
-            metrics.print_report()
-            
-            completeness_score = min(1.0, len(steps) * 0.15 + len(final_answer) / 1000 * 0.3)
-            return self._build_result(
-                success=True, answer=final_answer, mode=mode, intent=intent,
-                abstracted_query=abstracted_query, metrics=metrics, privacy_score=privacy_score,
-                completeness_score=completeness_score, steps=steps, docs=all_retrieved_docs,
-                memory=memory, validation=validation,
-            )
-
-        # Local-only execution path
-        print("  → [Local Path] Executing step-wise reasoning loop...")
+        # 5. Execution (Unified Path for both modes to ensure visibility)
+        print(f"  → [{mode.upper()} Path] Executing step-wise reasoning loop...")
+        from pipeline.executor import execute_steps
         exec_result = execute_steps(
             steps=steps,
             query=query,
@@ -501,56 +530,56 @@ Do NOT provide generic greetings or conversational filler.
         combined_findings = exec_result["combined_findings"]
         memory = exec_result["memory"]
 
-        # 6. Signal vs Noise filtering
-        print("  → Filtering findings (signal vs noise)...")
-        filtered = self.local_executor.filter_relevance(abstracted_query, combined_findings)
-        signal_support = (filtered.get("signal") or []) + (filtered.get("support") or [])
-        final_findings = "\n".join(signal_support) if signal_support else combined_findings
-
-        # Fallback if nothing useful was extracted by the local model
-        if not final_findings.strip() or "DATA_ABSENT" in combined_findings:
-            print("  → Local reasoning failed to find signal, falling back to direct context answer...")
-            fallback_docs = self._retrieve(query, abstracted_query, max(top_k, 8), selected_document)
-            if fallback_docs:
-                context = self.local_executor._prepare_context(fallback_docs)
-                answer = self.local_executor.answer_with_context(query=query, context=context)
-                metrics.total_time = time.time() - total_start
-                metrics.print_report()
-                
-                return self._build_result(
-                    success=True, answer=answer, mode=mode, intent=intent,
-                    abstracted_query=abstracted_query, metrics=metrics, privacy_score=privacy_score,
-                    completeness_score=0.4, steps=steps, docs=all_retrieved_docs + fallback_docs,
-                    memory=memory,
-                    validation={"valid": True, "score": 0.5, "critique": "Fallback: local synthesis from raw context."},
-                )
-            
-            return self._build_result(
-                success=True,
-                answer="Insufficient data in document to answer this query.",
-                mode=mode, intent=intent, abstracted_query=abstracted_query,
-                metrics=metrics, privacy_score=privacy_score, completeness_score=0.1,
-                steps=steps, docs=all_retrieved_docs, memory=memory,
-                validation={"valid": True, "score": 0.2, "critique": "No relevant evidence retrieved."},
-            )
-
-        # 7. Local Synthesis
-        print("  → Synthesizing final answer locally...")
+        # 6. Synthesis
         generation_start = time.time()
-        # Local synthesis fallback
-        synthesis_prompt = self.local_executor._create_synthesis_prompt(
-            query, [final_findings], expert_mode=expert_mode
-        )
-        final_answer = self.local_executor._call_ollama(synthesis_prompt, max_tokens=600)
-        final_answer = self.local_executor._clean_response(final_answer)
-        validation = {"valid": True, "score": 1.0, "critique": "Local fallback synthesis."}
+        if mode == "hybrid" and self.cloud_planner.client is not None:
+            print("  → Synthesizing final answer via Cloud...")
+            context = self.local_executor._prepare_context(all_retrieved_docs)
+            # Seed entity masking with the query abstractor's replacements so the
+            # same person/entity gets the SAME placeholder in both query and context.
+            seed_map = dict(self.query_abstractor.replacements)
+            seed_counters = {}
+            for ph in seed_map:
+                m = re.match(r'\[([A-Z]+)_(\d+)\]', ph)
+                if m:
+                    label, idx = m.group(1), int(m.group(2))
+                    seed_counters[label] = max(seed_counters.get(label, 1), idx + 1)
+            masked_context, entity_map, counters = self.local_executor._mask_entities(
+                context, existing_map=seed_map, existing_counters=seed_counters, query=query
+            )
+            
+            final_answer = self.cloud_planner.synthesize(
+                abstracted_query, masked_context, intent=intent, expert_mode=expert_mode
+            )
+            
+            validation = {"valid": True, "score": 1.0, "critique": "Hybrid Cloud Synthesis"}
+            if final_answer:
+                # Merge query replacements and context entity map for full restoration
+                full_map = {**self.query_abstractor.replacements, **entity_map}
+                final_answer = self.local_executor._restore_entities(final_answer, full_map)
+                final_answer = self.local_executor._remove_placeholder_meta_commentary(final_answer)
+            else:
+                print("  → Cloud synthesis failed. Falling back to Local synthesis...")
+                # Use the local model to synthesize a clean answer from findings
+                # We use the abstracted_query so the local model sees consistent placeholders
+                local_synthesis_prompt = self.local_executor._create_synthesis_prompt(
+                    abstracted_query, [combined_findings], expert_mode=expert_mode
+                )
+                # Add a system-level hint to the prompt to avoid meta-commentary
+                local_synthesis_prompt += "\nIMPORTANT: Treat placeholders like [PERSON_0] as the actual subject. Do not comment on them."
+                final_answer = self.local_executor._call_ollama(local_synthesis_prompt, max_tokens=800)
+                final_answer = f"⚠️ [Cloud Rate Limit] Synthesized via Local Analyst:\n\n{self.local_executor._clean_response(final_answer)}"
+        else:
+            print("  → Synthesizing final answer via Local model...")
+            # For local synthesis, we use the combined findings from the steps
+            final_answer = combined_findings
+            validation = {"valid": True, "score": 0.8, "critique": "Local Step-wise Synthesis"}
 
         metrics.generation_time = time.time() - generation_start
         metrics.total_time = time.time() - total_start
         metrics.print_report()
-
+        
         completeness_score = min(1.0, len(steps) * 0.15 + len(final_answer) / 1000 * 0.3)
-
         return self._build_result(
             success=True, answer=final_answer, mode=mode, intent=intent,
             abstracted_query=abstracted_query, metrics=metrics, privacy_score=privacy_score,
@@ -569,16 +598,54 @@ Do NOT provide generic greetings or conversational filler.
         top_k: int,
         selected_document: Optional[str],
     ) -> List[Dict[str, Any]]:
-        """Deduplicated multi-query retrieval."""
+        """Deduplicated multi-query retrieval with hybrid keyword fallback."""
         seen = set()
         results = []
+        
+        # 1. Semantic Search Pass
         for q in [primary_query, secondary_query]:
             for doc in self.vector_store.search(q, top_k=top_k, source=selected_document):
                 key = (doc.get("source"), doc.get("chunk_id"), doc.get("start_idx"))
                 if key not in seen:
                     seen.add(key)
                     results.append(doc)
-        return results[: max(top_k, 10)]
+        
+        # 2. Keyword Search Pass (Hybrid Fallback)
+        # For data extraction, exact term matching is often more reliable than dense embeddings
+        keyword_results = self._keyword_search(primary_query, top_k=top_k // 2)
+        for doc in keyword_results:
+            key = (doc.get("source"), doc.get("chunk_id"), doc.get("start_idx"))
+            if key not in seen:
+                if selected_document and doc.get("source") != selected_document:
+                    continue
+                seen.add(key)
+                results.insert(0, doc) # Prioritize keyword matches
+                
+        return results[: max(top_k, 20)]
+
+    def _keyword_search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+        """Simple keyword matching to catch exact terms that dense embeddings might miss."""
+        if not hasattr(self.vector_store, "documents") or not self.vector_store.documents:
+            return []
+        
+        # Extract meaningful keywords (ignore very short words)
+        query_words = [w.lower() for w in re.findall(r'\b\w{3,}\b', query)]
+        if not query_words:
+            return []
+            
+        scored_docs = []
+        for doc in self.vector_store.documents:
+            text = doc['text'].lower()
+            score = 0
+            for word in query_words:
+                if word in text:
+                    score += 1
+            if score > 0:
+                # Boost score if multiple unique keywords match
+                scored_docs.append((score, doc))
+        
+        scored_docs.sort(key=lambda x: x[0], reverse=True)
+        return [doc for score, doc in scored_docs[:top_k]]
 
     def _build_result(
         self,

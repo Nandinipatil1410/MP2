@@ -18,6 +18,7 @@ class QueryAbstractor:
             'credit_card': r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b',
             'date': r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b',
             'money': r'\$\s?\d+(?:,\d{3})*(?:\.\d{2})?',
+            'person': r'\b[A-Z][a-z]+(?: [A-Z][a-z]+)+\b', 
         }
         
         self.sensitive_keywords = [
@@ -57,9 +58,11 @@ class QueryAbstractor:
         abstracted = query
         self.replacements = {}
         
-        # Replace patterns with placeholders
+        # Replace patterns with placeholders (CASE SENSITIVE for Names)
         for pattern_name, pattern in self.patterns.items():
-            matches = re.finditer(pattern, abstracted, re.IGNORECASE)
+            # Use IGNORECASE only for patterns that are truly case-insensitive
+            flags = re.IGNORECASE if pattern_name in ['email', 'url'] else 0
+            matches = re.finditer(pattern, abstracted, flags)
             for i, match in enumerate(matches):
                 placeholder = f"[{pattern_name.upper()}_{i}]"
                 self.replacements[placeholder] = match.group()
@@ -100,10 +103,7 @@ class QueryAbstractor:
         # 1. Temporarily hide whitelisted instructions
         temp_query, preserved_map = preserve_whitelist(query)
 
-        # 2. Mask obvious names (Two capitalized words, but avoid sentence-initial verbs)
-        # We only mask if it's NOT at the very start of the query (likely a verb) 
-        # OR if it's clearly a name pattern.
-        temp_query = re.sub(r'(?<!^)\b[A-Z][a-z]+ [A-Z][a-z]+\b', '[PERSON]', temp_query)
+        # 2. (Removed) Crude NAME masking as it aggressively replaces valid financial/domain terms like 'Net Profit' with '[PERSON]'.
         
         # 3. Handle sentence-initial if it really looks like a name (e.g. John Doe starts...)
         # but avoid instructions like "Generate Expert"

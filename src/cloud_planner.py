@@ -33,6 +33,34 @@ class CloudReasoningPlanner:
         else:
             self.client = Groq(api_key=self.api_key)
 
+    def _log_cloud_handshake(
+        self,
+        label: str,
+        system_prompt: str,
+        user_prompt: str,
+        response: Optional[str] = None,
+        error: Optional[str] = None,
+    ):
+        """Print the exact cloud interaction to the terminal for transparency."""
+        print(f"\n\n{'='*80}")
+        print(f" \U0001f310 CLOUD HANDSHAKE: {label}")
+        print(f"{'='*80}")
+        
+        print(f"\nSYSTEM PROMPT:\n{'-'*20}")
+        print(system_prompt)
+        
+        print(f"\nUSER PROMPT:\n{'-'*20}")
+        print(user_prompt)
+        
+        if response:
+            print(f"\n\u2705 CLOUD RESPONSE:\n{'-'*20}")
+            print(response)
+        elif error:
+            print(f"\n\u274c CLOUD ERROR:\n{'-'*20}")
+            print(error)
+            
+        print(f"{'='*80}\n")
+
     # ------------------------------------------------------------------
     # Planning
     # ------------------------------------------------------------------
@@ -58,12 +86,14 @@ class CloudReasoningPlanner:
         if not self.client:
             return self._fallback_plan(query)
 
-        num_steps = "5-7" if expert_mode else "3-5"
+        num_steps = "7" if expert_mode else "4"
 
         system_prompt = (
-            "You are a Reasoning Architect. "
-            "Design a step-by-step investigation plan based on the query and document metadata. "
-            "Each step must specify a concrete action and a specific target to investigate. "
+            "You are a Lead Reasoning Architect. "
+            "Design a detailed, step-by-step investigation plan based on the query and document metadata. "
+            "Each step must follow the EXACT format:\n"
+            "Step N:\n"
+            "action: specific target\n\n"
             "Actions must be one of: extract, compare, infer, summarize, validate, calculate, evaluate, synthesize_arguments, identify_limitations."
         )
 
@@ -77,37 +107,54 @@ Document Metadata:
 
 Design {num_steps} concrete steps to answer the query.
 
-Return ONLY a JSON object in this exact format:
-{{
-  "steps": [
-    {{"id": 1, "action": "extract", "target": "specific thing to extract"}},
-    {{"id": 2, "action": "compare", "target": "what to compare"}},
-    {{"id": 3, "action": "infer", "target": "what to infer from evidence"}}
-  ]
-}}
+Return the plan in this EXACT format for each step:
+Step 1:
+extract: [specific target]
+
+Step 2:
+compare: [specific target]
 
 Rules:
 - No vague steps like "analyze the document"
 - Each target must be specific and directly relate to the query
-- Actions must be from: extract, compare, infer, summarize, validate, calculate, evaluate, synthesize_arguments, identify_limitations"""
+- Actions MUST be from the allowed list: extract, compare, infer, summarize, validate, calculate, evaluate, synthesize_arguments, identify_limitations
+- If the query involves placeholders like [PERSON_0], use them in your steps."""
 
         try:
+            print(f"\n  [Planner] Requesting {num_steps}-step reasoning plan from Cloud...")
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-                response_format={"type": "json_object"},
                 temperature=0.1,
             )
-            data = json.loads(response.choices[0].message.content)
-            steps = data.get("steps", [])
+            raw_content = response.choices[0].message.content
+            self._log_cloud_handshake("Structured Plan", system_prompt, user_prompt, response=raw_content)
+            
+            # Parse the text-based format into the structured dict list
+            import re
+            steps = []
+            # Regex to match "Step N:\naction: target"
+            # It looks for "Step \d+:", then a newline, then "action: target"
+            pattern = r"Step\s+(\d+):\s*\n\s*(\w+):\s*(.*)"
+            matches = re.finditer(pattern, raw_content, re.MULTILINE)
+            
+            for match in matches:
+                step_id = int(match.group(1))
+                action = match.group(2).strip().lower()
+                target = match.group(3).strip()
+                steps.append({"id": step_id, "action": action, "target": target})
+
             if not steps:
+                print("  [Planner] Failed to parse text-based plan, using fallback.")
                 return self._fallback_plan(query)
+                
             print(f"  [Planner] Generated {len(steps)}-step plan for: '{query[:60]}'")
             return {"steps": steps}
         except Exception as e:
+            self._log_cloud_handshake("Structured Plan", system_prompt, user_prompt, error=str(e))
             print(f"  [Planner] Plan generation failed ({e}), using fallback.")
             return self._fallback_plan(query)
 
@@ -157,12 +204,16 @@ Return as a JSON object with a "steps" key containing a list:
                 response_format={"type": "json_object"},
                 temperature=0.2,
             )
-            data = json.loads(response.choices[0].message.content)
+            raw_content = response.choices[0].message.content
+            self._log_cloud_handshake("Agentic Plan", system_prompt, user_prompt, response=raw_content)
+            
+            data = json.loads(raw_content)
             steps = data.get("steps", [])
             if isinstance(steps, list) and steps:
                 return steps
             return self._fallback_agentic_steps(query, expert_mode)
         except Exception as e:
+            self._log_cloud_handshake("Agentic Plan", system_prompt, user_prompt, error=str(e))
             print(f"  [Planner] Agentic plan failed ({e}), using fallback.")
             return self._fallback_agentic_steps(query, expert_mode)
 
@@ -195,9 +246,14 @@ Return as a JSON object with a "steps" key containing a list:
         detail_level = "detailed, well-structured" if expert_mode else "concise and direct"
 
         system_prompt = (
-            "You are a precise, evidence-based analyst. "
-            "Your only job is to synthesize a grounded answer from the provided findings. "
-            "You NEVER invent information. If a detail is not in the findings, you omit it."
+            "You are a Senior Strategic Intelligence Analyst. "
+            "Provide a comprehensive, deeply-reasoned report based ONLY on the provided context. "
+            "NEVER give short or conversational answers. Use professional Markdown formatting. "
+            "IMPORTANT: Placeholders like [PERSON_0], [NAME_1], etc., represent the actual entities in the documents. "
+            "Treat them as the primary subjects. DO NOT comment on the placeholders themselves, and do NOT suggest "
+            "that the real names are missing or withheld. "
+            "Always include headers: # Executive Summary, ## Key Findings, ## Detailed Analysis, and ### Conclusion. "
+            "Use tables or bullet points for data comparisons."
         )
 
         if intent == "reasoning" and ("review" in query.lower() or "evaluate" in query.lower() or "critique" in query.lower()):
@@ -220,13 +276,24 @@ Return as a JSON object with a "steps" key containing a list:
 --- END FINDINGS ---
 
 Write a {detail_level} answer that:
-1. Directly addresses the query
-2. Uses ONLY information present in the findings
-3. Avoids speculation, filler phrases, or generic statements
-4. If a finding says "DATA_ABSENT", acknowledge it as not found{structure_rubric}
+1. Directly addresses the query with clear headers and bullet points.
+2. Uses Markdown for structure (e.g., # for headers, - for bullets, ** for emphasis).
+3. Uses ONLY information present in the findings.
+4. Avoids speculation, filler phrases, or generic statements.
+5. If a finding says "DATA_ABSENT", acknowledge it as not found.
+6. Ensure each distinct point is on a NEW LINE to prevent text run-on.
+7. Treat placeholder words (like "DUMMY", "UNKNOWN") as literal data if they appear in the text{structure_rubric}
 
 If the findings contain insufficient data to answer the query, respond:
 "Insufficient data in document to answer: [specific missing information]"
+
+STRICT RULES FOR EXTRACTION:
+1. If asked for a "Total" that is not labeled, calculate it by summing its constituent parts found in the text.
+2. Resolve hierarchical headers: A value under "Income" -> "Interest" is "Interest Income".
+3. If multiple years are present, prioritize the most recent (e.g. FY2022) unless specified otherwise.
+4. If a value is missing but can be inferred (e.g. Net Profit = Total Income - Total Expenses), perform the calculation.
+
+CRITICAL: The document has been anonymized. You will see placeholders like [PERSON_1], [ORG_1], [NUM_1], "DUMMY", etc. You MUST extract these exact placeholders as your answer. For example, if asked for the patient's name and the text says "Name: [PERSON_1]", your answer must be "[PERSON_1]". Do NOT treat these tags as insufficient data.
 
 ANSWER:"""
 
@@ -241,8 +308,11 @@ ANSWER:"""
                 temperature=0.3,
                 max_tokens=1024,
             )
-            return response.choices[0].message.content.strip()
+            raw_content = response.choices[0].message.content
+            # self._log_cloud_handshake("Synthesis", system_prompt, user_prompt, response=raw_content)
+            return raw_content.strip()
         except Exception as e:
+            # self._log_cloud_handshake("Synthesis", system_prompt, user_prompt, error=str(e))
             print(f"  [Planner] Cloud synthesis failed ({e}).")
             return None
 
@@ -298,8 +368,11 @@ REPAIRED ANSWER:"""
                 temperature=0.0,
                 max_tokens=900,
             )
-            return response.choices[0].message.content.strip()
+            raw_content = response.choices[0].message.content
+            self._log_cloud_handshake("Repair", system_prompt, user_prompt, response=raw_content)
+            return raw_content.strip()
         except Exception as e:
+            self._log_cloud_handshake("Repair", system_prompt, user_prompt, error=str(e))
             print(f"  [Planner] Cloud repair failed ({e}).")
             return None
 
@@ -343,8 +416,11 @@ Return JSON:
                 response_format={"type": "json_object"},
                 temperature=0.0,
             )
-            return json.loads(response.choices[0].message.content)
+            raw_content = response.choices[0].message.content
+            self._log_cloud_handshake("Validation", system_prompt, user_prompt, response=raw_content)
+            return json.loads(raw_content)
         except Exception as e:
+            self._log_cloud_handshake("Validation", system_prompt, user_prompt, error=str(e))
             return {"valid": True, "score": 0.5, "critique": f"Validation error: {e}"}
 
     # ------------------------------------------------------------------
@@ -365,8 +441,11 @@ Return JSON:
                 temperature=0.7,
                 max_tokens=2000,
             )
-            return response.choices[0].message.content
+            raw_content = response.choices[0].message.content
+            self._log_cloud_handshake("Direct Completion", system_prompt, user_prompt, response=raw_content)
+            return raw_content
         except Exception as e:
+            self._log_cloud_handshake("Direct Completion", system_prompt, user_prompt, error=str(e))
             return f"Error connecting to cloud: {e}"
 
     # ------------------------------------------------------------------

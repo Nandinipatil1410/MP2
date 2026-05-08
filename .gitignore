@@ -1,9 +1,63 @@
+# ─── Secrets & Environment ───────────────────────────────────────────────────
 .env
-venv/
+.env.*
+*.secret
+
+# ─── Python ──────────────────────────────────────────────────────────────────
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+
+# ─── Virtual Environments ────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+hybridenv/
+ENV/
+
+# ─── Data & Vector DB (user-supplied / generated at runtime) ─────────────────
 data/vector_db/
+data/documents/
+data/synthetic/
+src/data/
+
+# ─── Logs & Runtime Artifacts ────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Evaluation & Experiment Outputs ─────────────────────────────────────────
 results/
+experiments/
+eval_benchmarks.json
 official_evaluation_results.json
-hybridenv
-.venv
+evaluation_results.json
+evaluation_summary.json
+evaluation_report.txt
+
+# ─── Temporary / Scratch ─────────────────────────────────────────────────────
+scratch/
+tmp/
+*.tmp
+
+# ─── OS & Editor Junk ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+.codex
+
+# ─── Documents (report templates, not code) ──────────────────────────────────
+*.docx
+*.pdf
+*.pptx
+*.xlsx

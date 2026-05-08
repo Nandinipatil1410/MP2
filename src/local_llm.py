@@ -68,6 +68,10 @@ class LocalLLMExecutor:
         When cloud_planner is provided (hybrid mode), Phase 3 uses the cloud model.
         """
         context = self._prepare_context(retrieved_docs)
+
+        print("\n===== CONTEXT SENT TO LLM =====\n")
+        print(context[:5000])   # first 5000 chars
+        print("\n==============================\n")        
         print(f"  Executing 3-phase reasoning pipeline locally...")
         print(f"    [Context Load]: {len(context)} chars")
 
@@ -95,7 +99,7 @@ class LocalLLMExecutor:
             final_answer = None
 
             if cloud_planner is not None:
-                masked_findings, entity_map, counters = self._mask_entities(combined_findings)
+                masked_findings, entity_map, counters = self._mask_entities(combined_findings, query=original_query)
                 if entity_map:
                     print(f"    [Privacy]: Masked {len(entity_map)} entity/entities before cloud call")
                 cloud_response = cloud_planner.synthesize(
@@ -161,6 +165,31 @@ Stay grounded in the provided context. Do not do detailed analysis unless asked.
             return self._clean_response(response)
         except Exception:
             return "Error: Local model unavailable. Please ensure Ollama is installed and running."
+
+    def comprehensive_answer(self, query: str, context: str) -> str:
+        """Detailed grounded answer for broader queries (summary/findings)."""
+        prompt = f"""### SYSTEM:
+You are a senior analyst. Provide a detailed, structured, and thorough answer using ONLY the provided context.
+
+### CONTEXT:
+{context}
+
+### QUESTION:
+{query}
+
+### INSTRUCTIONS:
+- Break down the answer into logical sections with headers.
+- Use bullet points or numbered lists for key points.
+- Ensure each point is on a NEW LINE.
+- Be thorough but grounded. No filler.
+- If data is missing, say "Not found in context."
+
+### DETAILED ANSWER:"""
+        try:
+            response = self._call_ollama(prompt, max_tokens=1024)
+            return self._clean_response(response)
+        except Exception:
+            return "Error: Local model unavailable."
 
     def execute_reasoning_step(
         self,
@@ -282,9 +311,11 @@ If the answer is not present, say: "Not stated in the context."
 {query}
 
 ### INSTRUCTIONS:
-- Quote or paraphrase only what the context supports.
-- Do not invent numbers, entities, dates, or causal explanations.
-- Keep the answer concise and direct.
+- Identify the single, most specific entity that answers the question.
+- Output ONLY that exact entity (e.g., just the patient's name).
+- Do NOT include other names, dates, or statuses.
+- Your entire response must be a single concise phrase.
+- If the document provides a placeholder like "DUMMY", return "DUMMY".
 
 ### FINAL ANSWER:"""
 
@@ -313,18 +344,21 @@ If the answer is not present, say: "Not stated in the context."
     # Privacy: PII masking / restoration
     # ------------------------------------------------------------------
 
-    def _mask_entities(self, text: str, existing_map=None, existing_counters=None):
+    def _mask_entities(self, text: str, existing_map=None, existing_counters=None, query: str = ""):
         """
         Selectively mask PII from findings before sending to cloud.
         Masks emails, URLs, phones, specific numbers, years, proper names, paper IDs.
+        If a matched string is present in the user's query, it is NOT masked.
         Returns: (masked_text, entity_map, counters)
         """
         entity_map = existing_map if existing_map is not None else {}
         counters = existing_counters if existing_counters is not None else {}
+        query_lower = query.lower()
 
         def replace(pattern, label, text):
             def _sub(m):
                 val = m.group(0)
+                # Ensure consistent masking for the cloud handshake
                 for ph, orig in entity_map.items():
                     if orig == val:
                         return ph
@@ -337,20 +371,64 @@ If the answer is not present, say: "Not stated in the context."
 
         text = replace(r'[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}', "EMAIL", text)
         text = replace(r'https?://[^\s<>"{}|\\^`]+', "URL", text)
-        text = replace(r'(\+?\d[\d\s\-().]{7,}\d)', "PHONE", text)
+        text = replace(r'(\+?\d[\d \t\-().]{7,}\d)', "PHONE", text)
         text = replace(r'\b\d{1,3}\.\d+%?\b', "NUM", text)
         text = replace(r'\b(19|20)\d{2}\b', "YEAR", text)
-        text = replace(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b', "NAME", text)
+        text = replace(r'\b[A-Z][a-z]+(?:[ \t]+[A-Z][a-z]+)+\b', "NAME", text)
         text = replace(r'arXiv:\d{4}\.\d{4,5}', "PAPERID", text)
 
         return text, entity_map, counters
 
     def _restore_entities(self, text: str, entity_map: dict) -> str:
         """Replace placeholders in cloud-generated text with original PII values."""
-        for placeholder, original in entity_map.items():
+        if not entity_map:
+            return text
+        # Sort keys by length descending to prevent partial replacement (e.g. [NAME_1] vs [NAME_10])
+        for placeholder in sorted(entity_map.keys(), key=len, reverse=True):
+            original = entity_map[placeholder]
             text = text.replace(placeholder, original)
             text = text.replace(placeholder.lower(), original)
         return text
+
+    def _remove_placeholder_meta_commentary(self, text: str) -> str:
+        """
+        Safety-net: after entity restoration, remove sentences where the cloud
+        claimed that a named entity is absent from the documents — which is a
+        residual artefact of the placeholder system and is factually wrong once
+        names have been restored.
+
+        Targets patterns such as:
+          "the provided documents do not explicitly mention Mr Tan Ah Kow"
+          "However, the document does not mention Mr Tan"
+          "X is not explicitly mentioned in the documents"
+        """
+        # Patterns that signal a false-negative meta-commentary about a name
+        _denial_patterns = [
+            # "does/do not (explicitly) mention <Name>"
+            r'(?:do(?:es)?|did)\s+not\s+(?:explicitly\s+)?mention\s+[A-Z][A-Za-z\s\-\.]+(?=[\.,;]|\s+(?:Instead|However|But|They)|\s*$)',
+            # "X is not (explicitly) mentioned"
+            r'[A-Z][A-Za-z\s\-\.]+\s+(?:is|are)\s+not\s+(?:explicitly\s+)?mentioned',
+            # "no (explicit) mention of X"
+            r'no\s+(?:explicit\s+)?mention\s+of\s+[A-Z][A-Za-z\s\-\.]+(?=[\.,;]|\s|$)',
+            # "X does not appear in the document"
+            r'[A-Z][A-Za-z\s\-\.]+\s+(?:does|do)\s+not\s+appear\s+in\s+the\s+(?:provided\s+)?documents?',
+        ]
+
+        sentences = re.split(r'(?<=[.!?])\s+', text)
+        cleaned = []
+        for sentence in sentences:
+            is_false_denial = False
+            sl = sentence.lower()
+            # Quick pre-check: only bother regex matching if denial keywords present
+            if any(kw in sl for kw in ['not mention', 'not explicitly mention', 'no mention', 'does not appear']):
+                for pat in _denial_patterns:
+                    if re.search(pat, sentence, re.IGNORECASE):
+                        is_false_denial = True
+                        break
+            if not is_false_denial:
+                cleaned.append(sentence)
+
+        return ' '.join(cleaned).strip()
 
     # ------------------------------------------------------------------
     # Context preparation
@@ -363,7 +441,7 @@ If the answer is not present, say: "Not stated in the context."
 
         context_parts = []
         char_count = 0
-        MAX_CHARS = 15000
+        MAX_CHARS = 30000
 
         for i, doc in enumerate(documents, 1):
             text = doc["text"]
@@ -445,8 +523,19 @@ If the answer is not present, say: "Not stated in the context."
     # Fallback
     # ------------------------------------------------------------------
 
-    def _fallback_response(self, query: str, documents: List[Dict]) -> str:
+    def _fallback_response(self, query: str, documents: List[Dict], intent: str = "general") -> str:
         if not documents:
             return "Insufficient data in document to answer this query."
-        relevant_text = " ".join([doc["text"][:200] for doc in documents[:2]])
-        return f"Based on available documents: {relevant_text}..."
+        
+        # Build a small context from the top documents
+        context = self._prepare_context(documents[:3])
+        
+        try:
+            # For extraction, use concise path; for others, use comprehensive path
+            if intent == "extraction":
+                return self.answer_with_context(query, context)
+            return self.comprehensive_answer(query, context)
+        except Exception:
+            # Absolute last resort: snippet
+            relevant_text = " ".join([doc["text"][:300] for doc in documents[:2]])
+            return f"Based on available documents: {relevant_text}..."

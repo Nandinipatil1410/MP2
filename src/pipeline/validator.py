@@ -119,6 +119,10 @@ def _validate_with_llm(
     # Truncate context only if extremely long to avoid token limit (Groq supports 8k tokens ~ 32k chars)
     safe_context = context[:25000] if len(context) > 25000 else context
 
+    user_prompt = _VALIDATION_PROMPT.format(
+        query=query, context=safe_context, answer=answer
+    )
+    print(f"\n--- [Validator] CLOUD PROMPT ---\n{user_prompt}\n" + "-"*40)
     import json
     try:
         response = groq_client.chat.completions.create(
@@ -126,9 +130,7 @@ def _validate_with_llm(
             messages=[
                 {
                     "role": "user",
-                    "content": _VALIDATION_PROMPT.format(
-                        query=query, context=safe_context, answer=answer
-                    ),
+                    "content": user_prompt,
                 }
             ],
             response_format={"type": "json_object"},
