@@ -1,5 +1,0 @@
-DOMAIN: MEDICAL
-TYPE: Patient Discharge Summary
-TITLE: Patient Discharge Summary
-============================================================
-

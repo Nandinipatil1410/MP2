@@ -27,6 +27,9 @@ ENV/
 data/vector_db/
 data/documents/
 data/synthetic/
+data/synthetic/documents/
+data/synthetic/manifest.json
+data/synthetic/queries.json
 src/data/
 
 # ─── Logs & Runtime Artifacts ────────────────────────────────────────────────
@@ -46,6 +49,10 @@ evaluation_report.txt
 scratch/
 tmp/
 *.tmp
+
+# ─── Internal Project Docs (not for public/cloners) ──────────────────────────
+TEAM_DIVISION.md
+PROJECT_DOCUMENTATION.md
 
 # ─── OS & Editor Junk ────────────────────────────────────────────────────────
 .DS_Store
