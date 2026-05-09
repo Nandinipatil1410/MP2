@@ -1065,3 +1065,376 @@ select {
 .verdict-box {
     margin-top: 20px !important;
 }
+
+/* ─── Query Transparency Panel ─────────────────────────────────────── */
+.query-transparency-panel {
+    margin-top: 22px;
+    border-radius: 20px;
+    border: 1px solid rgba(79, 70, 229, 0.18);
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.92) 0%,
+        rgba(241, 245, 255, 0.88) 100%);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(79, 70, 229, 0.07);
+    overflow: hidden;
+    animation: fadeInScale 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.qt-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid rgba(79, 70, 229, 0.1);
+}
+
+.qt-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.qt-title {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -0.01em;
+}
+
+.qt-subtitle {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+.qt-badge {
+    margin-left: auto;
+    flex-shrink: 0;
+    padding: 5px 12px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    transition: all 0.3s ease;
+}
+
+.qt-badge.masked {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.qt-badge.clean {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.qt-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 20px 22px;
+}
+
+.qt-lane {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.qt-lane-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.qt-lane-label.raw {
+    color: #d97706;
+}
+
+.qt-lane-label.abstracted {
+    color: var(--primary);
+}
+
+.qt-lane-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+
+.qt-code {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-family: "Fira Code", "Cascadia Code", "Courier New", monospace;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 48px;
+}
+
+.raw-code {
+    background: rgba(245, 158, 11, 0.07);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    color: #92400e;
+}
+
+.abstracted-code {
+    background: rgba(79, 70, 229, 0.06);
+    border: 1px solid rgba(79, 70, 229, 0.2);
+    color: var(--primary-strong);
+}
+
+.qt-arrow {
+    font-size: 1.1rem;
+    color: var(--muted);
+    text-align: center;
+    padding: 6px 0;
+    opacity: 0.5;
+    line-height: 1;
+}
+
+.qt-same-note {
+    padding: 10px 22px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ─── LLM Judge Panel ────────────────────────────────────────────────── */
+.judge-panel {
+    margin-top: 0;
+}
+
+.judge-meta-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.judge-section-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 20px 0 10px;
+}
+
+/* Verdict Banner */
+.judge-verdict {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    margin: 16px 0 4px;
+    flex-wrap: wrap;
+}
+
+.winner-hybrid {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(79, 70, 229, 0.04));
+    border: 1px solid rgba(79, 70, 229, 0.25);
+}
+
+.winner-local {
+    background: linear-gradient(135deg, rgba(8, 145, 178, 0.08), rgba(8, 145, 178, 0.04));
+    border: 1px solid rgba(8, 145, 178, 0.25);
+}
+
+.winner-tie {
+    background: linear-gradient(135deg, rgba(100, 116, 139, 0.08), rgba(100, 116, 139, 0.04));
+    border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+.verdict-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    min-width: 80px;
+}
+
+.verdict-winner {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--primary);
+}
+
+.winner-local .verdict-winner { color: var(--accent); }
+.winner-tie   .verdict-winner { color: var(--muted); }
+
+.verdict-scores {
+    display: flex;
+    gap: 14px;
+    margin-left: auto;
+}
+
+.vscore {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    padding: 6px 12px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid var(--border);
+}
+
+.vscore strong { color: var(--text); }
+
+/* Score Table */
+.judge-scores-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.judge-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.judge-table thead th {
+    padding: 10px 14px;
+    background: var(--surface-soft);
+    font-weight: 800;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.judge-table tbody tr:nth-child(even) {
+    background: rgba(248, 250, 252, 0.6);
+}
+
+.judge-table tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    vertical-align: top;
+    color: var(--text);
+}
+
+.score-cell {
+    font-weight: 800;
+    font-size: 1rem;
+    text-align: center;
+    min-width: 60px;
+}
+
+.score-win {
+    color: #059669;
+    background: rgba(16, 185, 129, 0.08);
+    border-radius: 8px;
+}
+
+.reason-cell {
+    font-size: 0.8rem;
+    color: var(--muted);
+    max-width: 260px;
+}
+
+/* Bar Chart */
+.judge-bars {
+    margin: 4px 0 8px;
+}
+
+.bar-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 10px;
+}
+
+.legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.local-dot  { background: var(--accent); }
+.hybrid-dot { background: var(--primary); }
+
+.bar-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 32px 1fr 32px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.bar-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text);
+    text-transform: capitalize;
+}
+
+.bar-track {
+    height: 10px;
+    border-radius: 99px;
+    background: rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.5s ease;
+}
+
+.local-bar  { background: linear-gradient(90deg, var(--accent), #0e7490); }
+.hybrid-bar { background: linear-gradient(90deg, var(--primary), #6366f1); }
+
+.bar-val {
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-align: right;
+}
+
+.local-val  { color: var(--accent); }
+.hybrid-val { color: var(--primary); }
+
+/* Key Differences */
+.judge-diffs-list {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.judge-diffs-list li {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+}
+
+/* Judge Reasoning */
+.judge-reasoning-box {
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    white-space: pre-wrap;
+}

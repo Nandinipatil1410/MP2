@@ -68,6 +68,10 @@ class QueryAbstractor:
                 self.replacements[placeholder] = match.group()
                 abstracted = abstracted.replace(match.group(), placeholder)
         
+        # Additional pass: catch single first names following personal/medical context keywords
+        # (The 'person' pattern above only catches multi-word names like "John Smith")
+        abstracted = self._mask_single_names(abstracted)
+
         # Extract intent while removing specific details
         abstracted = self._generalize_query(abstracted)
         
@@ -79,7 +83,39 @@ class QueryAbstractor:
         }
         
         return abstracted, metadata
-    
+
+    def _mask_single_names(self, text: str) -> str:
+        """
+        Detect and mask single capitalized names that appear after context keywords
+        indicating a person (patient, for, to, named, of, contact, called).
+        These would be missed by the multi-word 'person' pattern.
+        """
+        # Keywords that strongly signal the next capitalized word is a person's name
+        context_keywords = (
+            r'patient\s+|for\s+|given\s+to\s+|to\s+|named\s+|called\s+|'
+            r'of\s+patient\s+|contact\s+|about\s+patient\s+|about\s+'
+        )
+        # Match: <context_keyword><SingleCapitalizedName>
+        # Exclude already-replaced placeholders (they start with [)
+        pattern = re.compile(
+            rf'\b({context_keywords})([A-Z][a-z]{{2,}})\b(?!\s+[A-Z])'  # not followed by another cap word (handled by multi-word pattern)
+        )
+
+        def replace_name(match):
+            keyword = match.group(1)
+            name = match.group(2)
+            # Skip if this token is already a placeholder marker
+            if name.startswith('['):
+                return match.group(0)
+            # Assign next PERSON index
+            existing = [k for k in self.replacements if k.startswith('[PERSON_')]
+            idx = len(existing)
+            placeholder = f'[PERSON_{idx}]'
+            self.replacements[placeholder] = name
+            return keyword + placeholder
+
+        return pattern.sub(replace_name, text)
+
     def _generalize_query(self, query: str) -> str:
         """Generalize query to focus on intent while preserving instructions"""
         # Whitelist of terms that should NEVER be masked as [PERSON]

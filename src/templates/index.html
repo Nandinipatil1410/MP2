@@ -128,6 +128,32 @@
                         </article>
 
                     </div>
+
+                    <!-- Query Transparency Panel -->
+                    <div id="queryTransparency" class="query-transparency-panel hidden">
+                        <div class="qt-header">
+                            <span class="qt-icon">🛡️</span>
+                            <div>
+                                <div class="qt-title">Privacy Transparency</div>
+                                <div class="qt-subtitle">How your query was transformed before reaching the cloud</div>
+                            </div>
+                            <span id="qtPrivacyBadge" class="qt-badge">Protected</span>
+                        </div>
+                        <div class="qt-body">
+                            <div class="qt-lane">
+                                <div class="qt-lane-label raw">Raw Query</div>
+                                <div class="qt-lane-desc">What you typed — stays on-device</div>
+                                <div id="qtRawQuery" class="qt-code raw-code"></div>
+                            </div>
+                            <div class="qt-arrow">↓</div>
+                            <div class="qt-lane">
+                                <div class="qt-lane-label abstracted">Abstracted Query</div>
+                                <div class="qt-lane-desc">What the cloud actually receives</div>
+                                <div id="qtAbstractedQuery" class="qt-code abstracted-code"></div>
+                            </div>
+                        </div>
+                        <div id="qtSameNote" class="qt-same-note hidden">✓ No sensitive information detected — query sent as-is.</div>
+                    </div>
                 </div>
 
                 <div id="compareTab" class="tab-panel">
@@ -148,11 +174,47 @@
 
                     <div id="compareStatus" class="inline-status hidden"></div>
                     <div id="compareResults" class="compare-layout hidden">
+                        <!-- Response side-by-side -->
                         <section class="result-card full-width">
                             <div class="result-card-header">
                                 <h4>Response Comparison</h4>
                             </div>
                             <div id="responseColumns" class="response-columns"></div>
+                        </section>
+
+                        <!-- LLM Judge Evaluation Panel -->
+                        <section class="result-card full-width judge-panel">
+                            <div class="result-card-header">
+                                <div class="card-title-row">
+                                    <div>
+                                        <h4>⚖️ LLM-as-a-Judge Evaluation</h4>
+                                        <p style="margin:4px 0 0; font-size:0.82rem; color:var(--muted);">Automated evaluation by a local judge model — no human bias</p>
+                                    </div>
+                                    <div id="judgeMeta" class="judge-meta-chips"></div>
+                                </div>
+                            </div>
+
+                            <!-- Verdict Banner -->
+                            <div id="judgeWinner" class="judge-verdict hidden"></div>
+
+                            <!-- Per-Criterion Score Table -->
+                            <div class="judge-section-title">Criterion Scores (0–10)</div>
+                            <div id="judgeScores" class="judge-scores-wrap hidden"></div>
+
+                            <!-- Score Bars (Local vs Hybrid visual) -->
+                            <div id="judgeBarChart" class="judge-bars hidden"></div>
+
+                            <!-- Key Differences -->
+                            <div id="judgeDiffsWrap" class="hidden">
+                                <div class="judge-section-title">Key Differences Identified</div>
+                                <ul id="judgeDiffs" class="judge-diffs-list"></ul>
+                            </div>
+
+                            <!-- Judge Reasoning -->
+                            <div id="judgeReasoningWrap" class="hidden">
+                                <div class="judge-section-title">Judge Reasoning</div>
+                                <div id="judgeReasoning" class="judge-reasoning-box"></div>
+                            </div>
                         </section>
                     </div>
                 </div>

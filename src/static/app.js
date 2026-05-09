@@ -38,6 +38,21 @@ const elements = {
     clearSessionBtn: document.getElementById("clearSessionBtn"),
     persistedDocsSection: document.getElementById("persistedDocsSection"),
     persistedFileList: document.getElementById("persistedFileList"),
+    // Query Transparency
+    queryTransparency: document.getElementById("queryTransparency"),
+    qtRawQuery: document.getElementById("qtRawQuery"),
+    qtAbstractedQuery: document.getElementById("qtAbstractedQuery"),
+    qtPrivacyBadge: document.getElementById("qtPrivacyBadge"),
+    qtSameNote: document.getElementById("qtSameNote"),
+    // Judge panel
+    judgeMeta: document.getElementById("judgeMeta"),
+    judgeWinner: document.getElementById("judgeWinner"),
+    judgeScores: document.getElementById("judgeScores"),
+    judgeBarChart: document.getElementById("judgeBarChart"),
+    judgeDiffsWrap: document.getElementById("judgeDiffsWrap"),
+    judgeDiffs: document.getElementById("judgeDiffs"),
+    judgeReasoningWrap: document.getElementById("judgeReasoningWrap"),
+    judgeReasoning: document.getElementById("judgeReasoning"),
 };
 
 function setStatus(target, message, type = "status-success") {
@@ -239,10 +254,13 @@ function renderPrivacyTransparency(results) {
 }
 
 function renderJudge(judge) {
+    // Reset all sections
     elements.judgeMeta.innerHTML = "";
     elements.judgeWinner.classList.add("hidden");
-    elements.judgeDiffs.classList.add("hidden");
     elements.judgeScores.classList.add("hidden");
+    elements.judgeBarChart.classList.add("hidden");
+    elements.judgeDiffsWrap.classList.add("hidden");
+    elements.judgeReasoningWrap.classList.add("hidden");
 
     if (!judge || judge.provider === "unavailable") {
         const message = judge?.error ? `Judge unavailable: ${judge.error}` : "Judge unavailable.";
@@ -250,38 +268,108 @@ function renderJudge(judge) {
         return;
     }
 
-    const meta = [
-        `Provider: ${judge.provider}`,
-        judge.model ? `Model: ${judge.model}` : null,
-    ].filter(Boolean);
+    // --- Meta chips (provider / model) ---
+    const meta = [`Provider: ${judge.provider}`, judge.model ? `Model: ${judge.model}` : null].filter(Boolean);
+    elements.judgeMeta.innerHTML = meta.map(m => `<span class="metric-chip">${escapeHtml(m)}</span>`).join("");
 
-    elements.judgeMeta.innerHTML = meta
-        .map((item) => `<span class="metric-chip">${escapeHtml(item)}</span>`)
-        .join("");
-
+    // --- Verdict Banner ---
     const winnerMap = { A: "Local-Only", B: "Hybrid", Tie: "Tie" };
     const winnerLabel = winnerMap[judge.comparison?.winner] || "Tie";
-    const localScore = judge.comparison?.answer_a_score ?? judge.local_only?.overall_score ?? "N/A";
+    const localScore  = judge.comparison?.answer_a_score ?? judge.local_only?.overall_score ?? "N/A";
     const hybridScore = judge.comparison?.answer_b_score ?? judge.hybrid?.overall_score ?? "N/A";
-    const strength = judge.comparison?.preference_strength ? ` (${judge.comparison.preference_strength})` : "";
+    const strength    = judge.comparison?.preference_strength ? ` (${judge.comparison.preference_strength})` : "";
 
-    elements.judgeWinner.textContent = `Winner: ${winnerLabel}${strength}. Local: ${localScore}. Hybrid: ${hybridScore}.`;
+    const winnerClass = winnerLabel === "Hybrid" ? "winner-hybrid"
+                       : winnerLabel === "Local-Only" ? "winner-local"
+                       : "winner-tie";
+    elements.judgeWinner.className = `judge-verdict ${winnerClass}`;
+    elements.judgeWinner.innerHTML = `
+        <div class="verdict-label">Verdict${strength}</div>
+        <div class="verdict-winner">${escapeHtml(winnerLabel)}</div>
+        <div class="verdict-scores">
+            <span class="vscore local">Local: <strong>${localScore}</strong></span>
+            <span class="vscore hybrid">Hybrid: <strong>${hybridScore}</strong></span>
+        </div>
+    `;
     elements.judgeWinner.classList.remove("hidden");
 
+    // --- Per-Criterion Score Table with Reasons ---
+    const criteria = ["accuracy", "completeness", "relevance", "coherence", "groundedness"];
+    const localEval  = judge.local_only  || {};
+    const hybridEval = judge.hybrid || {};
+
+    let tableHTML = `
+        <table class="judge-table">
+            <thead>
+                <tr>
+                    <th>Criterion</th>
+                    <th>Local Score</th>
+                    <th>Local Reason</th>
+                    <th>Hybrid Score</th>
+                    <th>Hybrid Reason</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    criteria.forEach(c => {
+        const localItem  = localEval[c]  || {};
+        const hybridItem = hybridEval[c] || {};
+        const ls = localItem.score  ?? "—";
+        const hs = hybridItem.score ?? "—";
+        const lsBetter = typeof ls === "number" && typeof hs === "number" && ls > hs;
+        const hsBetter = typeof ls === "number" && typeof hs === "number" && hs > ls;
+        tableHTML += `
+            <tr>
+                <td><strong>${escapeHtml(c)}</strong></td>
+                <td class="score-cell ${lsBetter ? 'score-win' : ''}">${ls}</td>
+                <td class="reason-cell">${escapeHtml(localItem.reason || "—")}</td>
+                <td class="score-cell ${hsBetter ? 'score-win' : ''}">${hs}</td>
+                <td class="reason-cell">${escapeHtml(hybridItem.reason || "—")}</td>
+            </tr>`;
+    });
+    tableHTML += `</tbody></table>`;
+    elements.judgeScores.innerHTML = tableHTML;
+    elements.judgeScores.classList.remove("hidden");
+
+    // --- Visual Score Bars ---
+    let barsHTML = "";
+    criteria.forEach(c => {
+        const ls = Number(localEval[c]?.score  ?? 0);
+        const hs = Number(hybridEval[c]?.score ?? 0);
+        barsHTML += `
+            <div class="bar-row">
+                <span class="bar-label">${escapeHtml(c)}</span>
+                <div class="bar-track">
+                    <div class="bar-fill local-bar"  style="width:${ls * 10}%" title="Local: ${ls}"></div>
+                </div>
+                <span class="bar-val local-val">${ls}</span>
+                <div class="bar-track">
+                    <div class="bar-fill hybrid-bar" style="width:${hs * 10}%" title="Hybrid: ${hs}"></div>
+                </div>
+                <span class="bar-val hybrid-val">${hs}</span>
+            </div>`;
+    });
+    elements.judgeBarChart.innerHTML = `
+        <div class="bar-legend">
+            <span class="legend-dot local-dot"></span>Local &nbsp;&nbsp;
+            <span class="legend-dot hybrid-dot"></span>Hybrid
+        </div>
+        ${barsHTML}`;
+    elements.judgeBarChart.classList.remove("hidden");
+
+    // --- Key Differences ---
     const diffs = Array.isArray(judge.comparison?.key_differences) ? judge.comparison.key_differences : [];
     if (diffs.length) {
-        elements.judgeDiffs.innerHTML = diffs.slice(0, 5).map((diff) => `<li>${escapeHtml(diff)}</li>`).join("");
-        elements.judgeDiffs.classList.remove("hidden");
+        elements.judgeDiffs.innerHTML = diffs.slice(0, 6).map(d => `<li>${escapeHtml(d)}</li>`).join("");
+        elements.judgeDiffsWrap.classList.remove("hidden");
     }
 
-    const criteria = ["accuracy", "completeness", "relevance", "coherence", "groundedness"];
-    const rows = criteria.map((criterion) => {
-        const local = judge.local_only?.[criterion]?.score ?? "";
-        const hybrid = judge.hybrid?.[criterion]?.score ?? "";
-        return [criterion, local, hybrid];
-    });
-    elements.judgeScores.innerHTML = renderTable(["Criterion", "Local", "Hybrid"], rows);
-    elements.judgeScores.classList.remove("hidden");
+    // --- Judge Reasoning ---
+    const reasoning = judge.comparison?.reasoning || judge.comparison?.rationale || "";
+    if (reasoning) {
+        elements.judgeReasoning.textContent = reasoning;
+        elements.judgeReasoningWrap.classList.remove("hidden");
+    }
 }
 
 function setRuntimeMetrics(data) {
@@ -436,13 +524,15 @@ async function loadDocuments() {
 async function runQuery() {
     clearStatus(elements.queryStatus);
     elements.queryResult.classList.add("hidden");
+    elements.queryTransparency?.classList.add("hidden");
     setStatus(elements.queryStatus, "Running the selected reasoning pipeline...", "status-warning");
     try {
+        const rawQuery = elements.queryInput.value;
         const result = await fetchJson("/api/query", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                query: elements.queryInput.value,
+                query: rawQuery,
                 mode: elements.modeSelect.value,
                 expert_mode: true,
                 selected_document: elements.documentSelect.value,
@@ -458,6 +548,25 @@ async function runQuery() {
             elements.reasoningCard?.classList.remove("hidden");
         } else {
             elements.reasoningCard?.classList.add("hidden");
+        }
+
+        // --- Query Transparency Panel ---
+        const abstractedQuery = result.abstracted_query || rawQuery;
+        if (elements.queryTransparency) {
+            elements.qtRawQuery.textContent = rawQuery;
+            elements.qtAbstractedQuery.textContent = abstractedQuery;
+
+            const isMasked = abstractedQuery !== rawQuery;
+            if (isMasked) {
+                elements.qtSameNote?.classList.add("hidden");
+                elements.qtPrivacyBadge.textContent = "PII Masked";
+                elements.qtPrivacyBadge.className = "qt-badge masked";
+            } else {
+                elements.qtSameNote?.classList.remove("hidden");
+                elements.qtPrivacyBadge.textContent = "No PII Detected";
+                elements.qtPrivacyBadge.className = "qt-badge clean";
+            }
+            elements.queryTransparency.classList.remove("hidden");
         }
 
         renderTrace(result);
@@ -483,6 +592,7 @@ async function runComparison() {
             }),
         });
         renderComparison(payload.results);
+        renderJudge(payload.judge);
         elements.compareResults.classList.remove("hidden");
         setStatus(elements.compareStatus, "Comparison complete.", "status-success");
     } catch (error) {
