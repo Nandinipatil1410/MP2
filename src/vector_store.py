@@ -15,7 +15,9 @@ class VectorStore:
     
     def __init__(self, embedding_model: str = "all-MiniLM-L6-v2", 
                  vector_db_path: str = "./data/vector_db"):
-        self.embedding_model = SentenceTransformer(embedding_model)
+        # Store model name but defer loading until first use to keep startup fast
+        self._embedding_model_name = embedding_model
+        self._embedding_model = None  # lazy-loaded on first call to create_embeddings()
         self.vector_db_path = Path(vector_db_path)
         self.vector_db_path.mkdir(parents=True, exist_ok=True)
         
@@ -26,6 +28,15 @@ class VectorStore:
         # Auto-load any previously saved index so embeddings survive server restarts
         self.load()
     
+    @property
+    def embedding_model(self) -> SentenceTransformer:
+        """Lazy-load the SentenceTransformer model on first use."""
+        if self._embedding_model is None:
+            print(f" Loading embedding model: {self._embedding_model_name}...")
+            self._embedding_model = SentenceTransformer(self._embedding_model_name)
+            print(" Embedding model ready.")
+        return self._embedding_model
+
     def create_embeddings(self, texts: List[str]) -> np.ndarray:
         """Create embeddings for a list of texts"""
         embeddings = self.embedding_model.encode(texts, show_progress_bar=True)
